@@ -11,7 +11,7 @@ struct processData
     int runningtime;
     int id;
 };
-
+int msgUpQueueID;
 
 int main(int argc, char *argv[])
 {
@@ -22,21 +22,23 @@ int main(int argc, char *argv[])
     char * line = NULL;
     size_t len = 0;
     struct CircularQueue *dataQueue = createQueue();
-    struct processData pData;
     int numberOfProcesses=0;
     ssize_t read;
     pFile = fopen("processes.txt", "r");
 
     if (pFile == NULL)  // case couldn't read file
-    {   
-        printf("Error! Could not open file\n"); 
-        exit(-1); 
-    } 
+    {
+        printf("Error! Could not open file\n");
+        exit(-1);
+    }
 
     int i =0;
     while ((read = getline(&line, &len, pFile)) != -1) {
+        struct processData *pData = malloc(sizeof(struct processData));
         if(line[0]!= '#'){
-            pData.id=atoi(line);
+            numberOfProcesses++;
+            int s=atoi(line);
+            pData->id=s;
             int numberOfTabs=0;
             bool flag=true;
             char lineCopied[len];
@@ -44,25 +46,25 @@ int main(int argc, char *argv[])
                  if(line[j]=='\t'){
                     numberOfTabs++;
                  }
-                  if(numberOfTabs==1 && flag==true){ 
+                  if(numberOfTabs==1 && flag==true){
                       strncpy(lineCopied, line + j+1, sizeof(line) - j +2);
                       //printf("\nmodified is %s\n",lineCopied);
                       flag=false;
-                      pData.arrivaltime=atoi(lineCopied);
+                      pData->arrivaltime=atoi(lineCopied);
                   }
-                    if(numberOfTabs==2 && flag==false){ 
+                    if(numberOfTabs==2 && flag==false){
                         strncpy(lineCopied, line + j+ 1, sizeof(line) - j +2);
                         flag=true;
-                        pData.runningtime=atoi(lineCopied);
+                        pData->runningtime=(int)atoi(lineCopied);
                     }
-                    if(numberOfTabs==3 && flag==true){ 
+                    if(numberOfTabs==3 && flag==true){
                        strncpy(lineCopied, line + j+ 1, sizeof(line) - j +2);
                        flag=false;
-                       pData.priority=atoi(lineCopied);
+                       pData->priority=(int)atoi(lineCopied);
                     }
             }
-        enqueue(dataQueue, &pData);
-       // struct processData *pData2=peek(dataQueue);
+        enqueue(dataQueue, pData);
+        struct processData *pData2=peek(dataQueue);
        // printf("%d  %d  %d  %d\n",pData2->id,pData2->arrivaltime,pData2->runningtime,pData2->priority );
         i++;
         }
@@ -89,12 +91,44 @@ int main(int argc, char *argv[])
         }
 
         //parent process (process generator code)
-        else{  
+        else{
             initClk();
-            int x = getClk();
+            //int x = getClk();
 
+            msgUpQueueID=msgget(MSGPROCSCED , 0666 | IPC_CREAT);
+            if(msgUpQueueID == -1){
+                printf ("error in creation of up message queue");
+                exit(-1);
+            }
 
-            
+            int procNumber=0;
+            int sendVal;
+            //printf("size is %d \n",numberOfProcesses);
+            while(numberOfProcesses>procNumber){
+                int x =getClk();
+                struct processData *pData2=peek(dataQueue);
+
+                if(pData2->arrivaltime==x){
+                    dequeue(dataQueue);
+                    sendVal= msgsnd(msgUpQueueID, pData2,sizeof(pData2),!IPC_NOWAIT);
+                    pData2=peek(dataQueue);
+                    procNumber++;
+                    //printf("%d at %d\n",procNumber,x);
+                    // while(dataQueue->first!=NULL && pData2->arrivaltime==x){
+                    //     if(dataQueue->first==NULL){
+                    //         printf("my null\n");
+                    //         pData2->arrivaltime=0;
+                    //     }
+                    //     else{
+                    //         dequeue(dataQueue);
+                    //         sendVal= msgsnd(msgUpQueueID, pData2,sizeof(pData2),!IPC_NOWAIT);
+                    //         pData2=peek(dataQueue);
+                    //     }
+                    //     procNumber++;
+                    //     //printf("%d at %d   with %d\n ",procNumber,x,pData2->arrivaltime);
+                    // }
+                }
+            }
             pidClk = wait(&stat_loc_Clk);
             pidSched = wait(&stat_loc_Sched);
         }
