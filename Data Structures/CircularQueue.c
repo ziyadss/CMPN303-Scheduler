@@ -63,6 +63,7 @@ void *dequeue(struct CircularQueue *queue)
     return data;
 }
 
+<<<<<<< HEAD
 void freeQueue(struct CircularQueue *queue)
 {
     free(queue);
