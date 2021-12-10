@@ -59,7 +59,7 @@ int main(int argc, char *argv[])
                        pData[i].priority=atoi(lineCopied);
                     }
             }
-        printf("%d  %d  %d  %d\n",pData[i].id,pData[i].arrivaltime,pData[i].runningtime,pData[i].priority  );
+       // printf("%d  %d  %d  %d\n",pData[i].id,pData[i].arrivaltime,pData[i].runningtime,pData[i].priority  );
         i++;
         }
     }
@@ -69,22 +69,39 @@ int main(int argc, char *argv[])
 
     // 2. Ask the user for the chosen scheduling algorithm and its parameters, if there are any.
     // 3. Initiate and create the scheduler and clock processes.
-    char *argsClk[]={"./clk.out",NULL};
-    execv(argsClk[0],argsClk);
+    int pidClk, stat_loc_Clk;
+    pidClk = fork();
+    if(pidClk==0){  //1st child: clock creation
+        char *argsClk[]={"./clk.out",NULL};
+        execv(argsClk[0],argsClk);
+    }
+    else
+    {
+        int pidSched, stat_loc_Sched;
+        pidSched=fork();
+        if(pidSched==0){ //2nd child: scheduler creation
+            char *argsScheduler[]={"./scheduler.out",NULL};
+            execv(argsScheduler[0],argsScheduler);
+        }
 
-    // char *argsScheduler[]={"./scheduler.out",NULL};
-    // execv(argsScheduler[0],argsScheduler);
+        //parent process (process generator code)
+        else{  
+            initClk();
+            int x = getClk();
+            //printf("current time is %d\n", x);
+            pidClk = wait(&stat_loc_Clk);
+            pidSched = wait(&stat_loc_Sched);
+        }
+    }
 
-
-
+    // code gets terminated beforehand so it doesn't reach that part ==> move to parent process
     // 4. Use this function after creating the clock process to initialize clock
     initClk();
-
-
-
     // To get time use this
     int x = getClk();
     printf("current time is %d\n", x);
+
+
     // TODO Generation Main Loop
     // 5. Create a data structure for processes and provide it with its parameters.
     // 6. Send the information to the scheduler at the appropriate time.
