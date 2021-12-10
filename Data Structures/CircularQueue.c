@@ -38,6 +38,13 @@ void enqueue(struct CircularQueue *queue, void *data)
     }
 }
 
+void *peek(struct CircularQueue *queue)
+{
+    if (queue->first)
+        return queue->first->data;
+    return NULL;
+}
+
 void *dequeue(struct CircularQueue *queue)
 {
     if (queue->first == NULL)
