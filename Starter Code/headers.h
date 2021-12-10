@@ -11,6 +11,7 @@
 #include <unistd.h>
 #include <signal.h>
 #include <time.h>
+#include <string.h>
 
 // Boolean datatype
 typedef enum
@@ -38,6 +39,7 @@ int getClk()
 void initClk()
 {
     int shmid = shmget(SHKEY, 4, 0444);
+    //printf("hello\n");
     while ((int)shmid == -1)
     {
         //Make sure that the clock exists
