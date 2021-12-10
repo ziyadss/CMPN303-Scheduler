@@ -1,5 +1,6 @@
 #include "headers.h"
 
+
 void clearResources(int);
 
 
@@ -20,7 +21,8 @@ int main(int argc, char *argv[])
     FILE *pFile;
     char * line = NULL;
     size_t len = 0;
-    struct processData pData[10];
+    struct CircularQueue *dataQueue = createQueue();
+    struct processData pData;
     int numberOfProcesses=0;
     ssize_t read;
     pFile = fopen("processes.txt", "r");
@@ -34,7 +36,7 @@ int main(int argc, char *argv[])
     int i =0;
     while ((read = getline(&line, &len, pFile)) != -1) {
         if(line[0]!= '#'){
-            pData[i].id=atoi(line);
+            pData.id=atoi(line);
             int numberOfTabs=0;
             bool flag=true;
             char lineCopied[len];
@@ -46,20 +48,22 @@ int main(int argc, char *argv[])
                       strncpy(lineCopied, line + j+1, sizeof(line) - j +2);
                       //printf("\nmodified is %s\n",lineCopied);
                       flag=false;
-                      pData[i].arrivaltime=atoi(lineCopied);
+                      pData.arrivaltime=atoi(lineCopied);
                   }
                     if(numberOfTabs==2 && flag==false){ 
                         strncpy(lineCopied, line + j+ 1, sizeof(line) - j +2);
                         flag=true;
-                        pData[i].runningtime=atoi(lineCopied);
+                        pData.runningtime=atoi(lineCopied);
                     }
                     if(numberOfTabs==3 && flag==true){ 
                        strncpy(lineCopied, line + j+ 1, sizeof(line) - j +2);
                        flag=false;
-                       pData[i].priority=atoi(lineCopied);
+                       pData.priority=atoi(lineCopied);
                     }
             }
-       // printf("%d  %d  %d  %d\n",pData[i].id,pData[i].arrivaltime,pData[i].runningtime,pData[i].priority  );
+        enqueue(dataQueue, &pData);
+       // struct processData *pData2=peek(dataQueue);
+       // printf("%d  %d  %d  %d\n",pData2->id,pData2->arrivaltime,pData2->runningtime,pData2->priority );
         i++;
         }
     }
@@ -88,7 +92,9 @@ int main(int argc, char *argv[])
         else{  
             initClk();
             int x = getClk();
-            //printf("current time is %d\n", x);
+
+
+            
             pidClk = wait(&stat_loc_Clk);
             pidSched = wait(&stat_loc_Sched);
         }

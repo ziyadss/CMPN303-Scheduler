@@ -13,6 +13,8 @@
 #include <time.h>
 #include <string.h>
 
+#include "../Data Structures/CircularQueue.c"
+
 // Boolean datatype
 typedef enum
 {

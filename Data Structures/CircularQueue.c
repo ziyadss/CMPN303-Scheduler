@@ -65,20 +65,20 @@ void *dequeue(struct CircularQueue *queue)
     return data;
 }
 
-int main()
-{
-    struct CircularQueue *queue = createQueue();
+// int main()
+// {
+//     struct CircularQueue *queue = createQueue();
 
-    int x = 1, y = 2, z = 3;
-    int *xa = &x, *ya = &y, *za = &z;
+//     int x = 1, y = 2, z = 3;
+//     int *xa = &x, *ya = &y, *za = &z;
 
-    enqueue(queue, xa);
-    enqueue(queue, ya);
-    enqueue(queue, za);
+//     enqueue(queue, xa);
+//     enqueue(queue, ya);
+//     enqueue(queue, za);
 
-    printf("%d\n", *(int *)dequeue(queue));
-    printf("%d\n", *(int *)dequeue(queue));
-    printf("%d\n", *(int *)dequeue(queue));
+//     printf("%d\n", *(int *)dequeue(queue));
+//     printf("%d\n", *(int *)dequeue(queue));
+//     printf("%d\n", *(int *)dequeue(queue));
 
-    return 0;
-}
+//     return 0;
+// }
