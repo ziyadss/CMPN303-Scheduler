@@ -40,9 +40,7 @@ void enqueue(struct CircularQueue *queue, void *data)
 
 void *peek(struct CircularQueue *queue)
 {
-    if (queue->first)
-        return queue->first->data;
-    return NULL;
+    return (queue->first) ? queue->first->data : NULL;
 }
 
 void *dequeue(struct CircularQueue *queue)
@@ -65,20 +63,7 @@ void *dequeue(struct CircularQueue *queue)
     return data;
 }
 
-int main()
+void freeQueue(struct CircularQueue *queue)
 {
-    struct CircularQueue *queue = createQueue();
-
-    int x = 1, y = 2, z = 3;
-    int *xa = &x, *ya = &y, *za = &z;
-
-    enqueue(queue, xa);
-    enqueue(queue, ya);
-    enqueue(queue, za);
-
-    printf("%d\n", *(int *)dequeue(queue));
-    printf("%d\n", *(int *)dequeue(queue));
-    printf("%d\n", *(int *)dequeue(queue));
-
-    return 0;
+    free(queue);
 }
