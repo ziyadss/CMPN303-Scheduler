@@ -1,3 +1,5 @@
+#pragma once
+
 #include <stdio.h> //if you don't use scanf/printf change this include
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -12,6 +14,9 @@
 #include <signal.h>
 #include <time.h>
 #include <string.h>
+
+#include "../Data Structures/CircularQueue.c"
+// #include "../Data Structures/PriorityQueue.c"
 
 // Boolean datatype
 typedef enum

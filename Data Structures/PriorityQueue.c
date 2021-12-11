@@ -1,4 +1,9 @@
-#include <stdlib.h>
+#pragma once
+
+#include "../Starter Code/headers.h"
+
+// TODO: rename functions to avoid conflict with CQueue
+// TODO: use buffers, return -1 for failures and errors
 
 size_t parent(const size_t i) { return (i - 1) / 2; }
 size_t left(const size_t i) { return 2 * i + 1; }
@@ -65,6 +70,8 @@ void decreasePriority(struct PriorityQueue *queue, size_t i, u_int8_t priority)
 
 void enqueue(struct PriorityQueue *queue, void *data, u_int8_t priority)
 {
+    // if (queue->size == queue->capacity) throw "Enqueuing into full PQueue";
+
     struct PriorityNode *node = malloc(sizeof(struct PriorityNode));
     node->data = data;
     node->priority = __UINT8_MAX__;
@@ -95,6 +102,7 @@ void *dequeue(struct PriorityQueue *queue)
 
 void freePriorityQueue(struct PriorityQueue *queue)
 {
+    // TODO: free up each node? dequeue?
     free(queue->nodes);
     free(queue);
 }

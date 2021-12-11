@@ -1,5 +1,7 @@
 {
     "files.associations": {
-        "time.h": "c"
+        "time.h": "c",
+        "priorityqueue.c": "cpp",
+        "circularqueue.c": "cpp"
     }
 }

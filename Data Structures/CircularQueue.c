@@ -1,4 +1,9 @@
-#include <stddef.h>
+#pragma once
+
+#include "../Starter Code/headers.h"
+
+// TODO: rename functions to avoid conflict with PQueue
+// TODO: use buffers, return -1 for failures and errors
 
 struct CircularNode
 {
@@ -11,6 +16,11 @@ struct CircularQueue
     struct CircularNode *first;
 };
 
+/**
+ * @brief Create a CicularQueue object
+ * 
+ * @return struct CircularQueue* 
+ */
 struct CircularQueue *createQueue()
 {
     struct CircularQueue *queue = malloc(sizeof(struct CircularQueue));
@@ -18,6 +28,12 @@ struct CircularQueue *createQueue()
     return queue;
 }
 
+/**
+ * @brief Enqueues data into the queue passed
+ * 
+ * @param queue 
+ * @param data 
+ */
 void enqueue(struct CircularQueue *queue, void *data)
 {
     struct CircularNode *node = malloc(sizeof(struct CircularNode));
@@ -38,11 +54,23 @@ void enqueue(struct CircularQueue *queue, void *data)
     }
 }
 
+/**
+ * @brief Returns data from the first node in a queue
+ * 
+ * @param queue 
+ * @return void* 
+ */
 void *peek(struct CircularQueue *queue)
 {
     return (queue->first) ? queue->first->data : NULL;
 }
 
+/**
+ * @brief Removed the first node in a queue and returns its data
+ * 
+ * @param queue 
+ * @return void* 
+ */
 void *dequeue(struct CircularQueue *queue)
 {
     if (queue->first == NULL)
@@ -63,7 +91,15 @@ void *dequeue(struct CircularQueue *queue)
     return data;
 }
 
+/**
+ * @brief Frees up memory allocated for a queue
+ * 
+ * @param queue 
+ */
 void freeQueue(struct CircularQueue *queue)
 {
+    while (queue->first)
+        dequeue(queue);
+
     free(queue);
 }

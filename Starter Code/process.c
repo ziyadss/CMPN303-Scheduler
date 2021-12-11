@@ -1,7 +1,7 @@
 #include "headers.h"
 
 /* Modify this file as needed*/
-int remainingtime ;
+int remainingtime;
 
 int main(int agrc, char *argv[])
 {
@@ -19,8 +19,7 @@ int main(int agrc, char *argv[])
             remainingtime--;
         }
 
-        printf(" time elapsed %d\n",
-               time);
+        printf(" time elapsed %d\n", time);
         prevtime = time;
         // remainingtime = ??;
     }
