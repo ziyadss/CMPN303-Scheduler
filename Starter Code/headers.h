@@ -26,6 +26,7 @@ typedef enum
 } bool;
 
 #define SHKEY 300
+#define MSGPROCSCED 400
 
 ///==============================
 //don't mess with this variable//
