@@ -2,9 +2,6 @@
 
 #include "../Starter Code/headers.h"
 
-// TODO: rename functions to avoid conflict with CQueue
-// TODO: use buffers, return -1 for failures and errors
-
 size_t parent(const size_t i) { return (i - 1) / 2; }
 size_t left(const size_t i) { return 2 * i + 1; }
 size_t right(const size_t i) { return 2 * i + 2; }
@@ -22,6 +19,12 @@ struct PriorityQueue
     size_t capacity;
 };
 
+/**
+ * @brief 
+ * 
+ * @param queue 
+ * @param i 
+ */
 void minHeapify(struct PriorityQueue *queue, size_t i)
 {
     size_t l = left(i), r = right(i);
@@ -42,20 +45,18 @@ void minHeapify(struct PriorityQueue *queue, size_t i)
     }
 };
 
-struct PriorityQueue *createPriorityQueue(size_t capacity)
-{
-    struct PriorityQueue *queue = malloc(sizeof(struct PriorityQueue));
-    queue->nodes = malloc(sizeof(struct PriorityNode *) * capacity);
-    queue->size = 0;
-    queue->capacity = capacity;
-
-    return queue;
-}
-
-void decreasePriority(struct PriorityQueue *queue, size_t i, u_int8_t priority)
+/**
+ * @brief 
+ * 
+ * @param queue 
+ * @param i 
+ * @param priority 
+ * @return int 
+ */
+int decreasePriority(struct PriorityQueue *queue, size_t i, u_int8_t priority)
 {
     if (priority > queue->nodes[i]->priority)
-        return;
+        return -1;
 
     queue->nodes[i]->priority = priority;
 
@@ -66,31 +67,69 @@ void decreasePriority(struct PriorityQueue *queue, size_t i, u_int8_t priority)
         queue->nodes[parent(i)] = tmp;
         i = parent(i);
     }
+    return 0;
 }
 
-void enqueue(struct PriorityQueue *queue, void *data, u_int8_t priority)
+/**
+ * @brief 
+ * 
+ * @param capacity 
+ * @return struct PriorityQueue* 
+ */
+struct PriorityQueue *createPQ(size_t capacity)
 {
-    // if (queue->size == queue->capacity) throw "Enqueuing into full PQueue";
+    struct PriorityQueue *queue = malloc(sizeof(*queue));
+    queue->nodes = malloc(sizeof(*(queue->nodes)) * capacity);
+    queue->size = 0;
+    queue->capacity = capacity;
 
-    struct PriorityNode *node = malloc(sizeof(struct PriorityNode));
+    return queue;
+}
+
+/**
+ * @brief 
+ * 
+ * @param queue 
+ * @param data 
+ * @param priority 
+ * @return int 
+ */
+int enqueuePQ(struct PriorityQueue *queue, void *data, u_int8_t priority)
+{
+    if (queue->size == queue->capacity)
+        return -1;
+
+    struct PriorityNode *node = malloc(sizeof(*node));
     node->data = data;
     node->priority = __UINT8_MAX__;
 
     queue->nodes[queue->size++] = node;
-    decreasePriority(queue, queue->size - 1, priority);
+    return decreasePriority(queue, queue->size - 1, priority);
 }
 
-struct PriorityNode *peek(struct PriorityQueue *queue)
+/**
+ * @brief 
+ * 
+ * @param queue 
+ * @return void* 
+ */
+void *peekPQ(struct PriorityQueue *queue)
 {
-    return (queue->size) ? queue->nodes[0] : NULL;
+    return (queue->size) ? queue->nodes[0]->data : NULL;
 }
 
-void *dequeue(struct PriorityQueue *queue)
+/**
+ * @brief 
+ * 
+ * @param queue 
+ * @return void* 
+ */
+void *dequeuePQ(struct PriorityQueue *queue)
 {
-    struct PriorityNode *min = peek(queue);
-    if (min == NULL)
+    if (queue->size == 0)
         return NULL;
 
+    struct PriorityNode *min = queue->nodes[0];
     void *data = min->data;
 
     queue->nodes[0] = queue->nodes[--queue->size];
@@ -100,9 +139,38 @@ void *dequeue(struct PriorityQueue *queue)
     return data;
 }
 
-void freePriorityQueue(struct PriorityQueue *queue)
+/**
+ * @brief 
+ * 
+ * @param queue 
+ * @return int 
+ */
+int freePQ(struct PriorityQueue *queue)
 {
-    // TODO: free up each node? dequeue?
+    while (queue->size)
+        dequeuePQ(queue);
+
+    queue->capacity = 0;
     free(queue->nodes);
     free(queue);
+    return 1;
 }
+
+// int main()
+// {
+//     struct PriorityQueue *queue = createPQ(3);
+
+//     int x = 1, y = 2, z = 3;
+
+//     enqueuePQ(queue, &x, 3);
+//     enqueuePQ(queue, &y, 2);
+//     enqueuePQ(queue, &z, 1);
+
+//     printf("%d\n", *(int *)dequeuePQ(queue));
+//     printf("%d\n", *(int *)dequeuePQ(queue));
+//     printf("%d\n", *(int *)dequeuePQ(queue));
+
+//     //3 2 1
+
+//     return 0;
+// }
