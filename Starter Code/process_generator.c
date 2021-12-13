@@ -19,7 +19,7 @@ int main(int argc, char *argv[])
     FILE *pFile;
     char *line = NULL;
     size_t len = 0;
-    struct CircularQueue *dataQueue = createQueue();
+    struct CircularQueue *dataQueue = createCQ();
     int numberOfProcesses = 0;
     ssize_t read;
     pFile = fopen("processes.txt", "r");
@@ -68,8 +68,8 @@ int main(int argc, char *argv[])
                     pData->priority = (int)atoi(lineCopied);
                 }
             }
-            enqueue(dataQueue, pData);
-            struct processData *pData2 = peek(dataQueue);
+            enqueueCQ(dataQueue, pData);
+            struct processData *pData2 = peekCQ(dataQueue);
             // printf("%d  %d  %d  %d\n",pData2->id,pData2->arrivaltime,pData2->runningtime,pData2->priority );
             i++;
         }
@@ -114,13 +114,13 @@ int main(int argc, char *argv[])
             while (numberOfProcesses > procNumber)
             {
                 int x = getClk();
-                struct processData *pData2 = peek(dataQueue);
+                struct processData *pData2 = peekCQ(dataQueue);
 
                 if (pData2->arrivaltime == x)
                 {
-                    dequeue(dataQueue);
+                    dequeueCQ(dataQueue);
                     sendVal = msgsnd(msgUpQueueID, pData2, sizeof(pData2), !IPC_NOWAIT);
-                    pData2 = peek(dataQueue);
+                    pData2 = peekCQ(dataQueue);
                     procNumber++;
                     //printf("%d at %d\n",procNumber,x);
                     // while(dataQueue->first!=NULL && pData2->arrivaltime==x){
@@ -129,9 +129,9 @@ int main(int argc, char *argv[])
                     //         pData2->arrivaltime=0;
                     //     }
                     //     else{
-                    //         dequeue(dataQueue);
+                    //         dequeueCQ(dataQueue);
                     //         sendVal= msgsnd(msgUpQueueID, pData2,sizeof(pData2),!IPC_NOWAIT);
-                    //         pData2=peek(dataQueue);
+                    //         pData2=peekCQ(dataQueue);
                     //     }
                     //     procNumber++;
                     //     //printf("%d at %d   with %d\n ",procNumber,x,pData2->arrivaltime);

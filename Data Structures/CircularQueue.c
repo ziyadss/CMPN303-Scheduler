@@ -2,9 +2,6 @@
 
 #include "../Starter Code/headers.h"
 
-// TODO: rename functions to avoid conflict with PQueue
-// TODO: use buffers, return -1 for failures and errors
-
 struct CircularNode
 {
     void *data;
@@ -21,9 +18,9 @@ struct CircularQueue
  * 
  * @return struct CircularQueue* 
  */
-struct CircularQueue *createQueue()
+struct CircularQueue *createCQ()
 {
-    struct CircularQueue *queue = malloc(sizeof(struct CircularQueue));
+    struct CircularQueue *queue = malloc(sizeof(*queue));
     queue->first = NULL;
     return queue;
 }
@@ -34,9 +31,9 @@ struct CircularQueue *createQueue()
  * @param queue 
  * @param data 
  */
-void enqueue(struct CircularQueue *queue, void *data)
+void enqueueCQ(struct CircularQueue *queue, void *data)
 {
-    struct CircularNode *node = malloc(sizeof(struct CircularNode));
+    struct CircularNode *node = malloc(sizeof(*node));
     node->data = data;
 
     if (queue->first)
@@ -60,7 +57,7 @@ void enqueue(struct CircularQueue *queue, void *data)
  * @param queue 
  * @return void* 
  */
-void *peek(struct CircularQueue *queue)
+void *peekCQ(struct CircularQueue *queue)
 {
     return (queue->first) ? queue->first->data : NULL;
 }
@@ -71,7 +68,7 @@ void *peek(struct CircularQueue *queue)
  * @param queue 
  * @return void* 
  */
-void *dequeue(struct CircularQueue *queue)
+void *dequeueCQ(struct CircularQueue *queue)
 {
     if (queue->first == NULL)
         return NULL;
@@ -96,28 +93,29 @@ void *dequeue(struct CircularQueue *queue)
  * 
  * @param queue 
  */
-void freeQueue(struct CircularQueue *queue)
+void freeCQ(struct CircularQueue *queue)
 {
     while (queue->first)
-        dequeue(queue);
+        dequeueCQ(queue);
 
     free(queue);
 }
 
 // int main()
 // {
-//     struct CircularQueue *queue = createQueue();
+//     struct CircularQueue *queue = createCQ();
 
 //     int x = 1, y = 2, z = 3;
-//     int *xa = &x, *ya = &y, *za = &z;
 
-//     enqueue(queue, xa);
-//     enqueue(queue, ya);
-//     enqueue(queue, za);
+//     enqueueCQ(queue, &x);
+//     enqueueCQ(queue, &y);
+//     enqueueCQ(queue, &z);
 
-//     printf("%d\n", *(int *)dequeue(queue));
-//     printf("%d\n", *(int *)dequeue(queue));
-//     printf("%d\n", *(int *)dequeue(queue));
+//     printf("%d\n", *(int *)dequeueCQ(queue));
+//     printf("%d\n", *(int *)dequeueCQ(queue));
+//     printf("%d\n", *(int *)dequeueCQ(queue));
+
+//     //1 2 3
 
 //     return 0;
 // }
