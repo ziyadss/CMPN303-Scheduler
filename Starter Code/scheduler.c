@@ -72,7 +72,7 @@ int main(int argc, char *argv[])
         //printf("recieved at clock =  %d\n",getClk());
         if(received == true){
             CreateProcessChild(receivedProcess->runningtime);
-            //printf("recieved at clock =  %d\n",getClk());
+            //printf("creating at clock =  %d\n",getClk());
             //printf("%d  %d  %d  %d\n",receivedProcess->id,receivedProcess->arrivaltime,receivedProcess->runningtime,receivedProcess->priority );        
         }
     }
