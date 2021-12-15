@@ -152,5 +152,6 @@ int main(int argc, char *argv[])
 
 void clearResources(int signum)
 {
-    //TODO Clears all resources in case of interruption
+    msgctl(msgUpQueueID,IPC_RMID,NULL);  
+    exit(-1);
 }
