@@ -1,5 +1,18 @@
 #include "headers.h"
 
+void CreateProcessChild(int runningTime){
+    int pidProcess, stat_loc_Process;
+    char * arrRunningTime=convertIntegerToChar(runningTime);
+    pidProcess = fork();
+        if (pidProcess == 0)
+        { //2nd child: scheduler creation
+            char *argsProcess[] = {"./process.out",arrRunningTime,NULL};
+            execv(argsProcess[0], argsProcess);
+        }
+        else
+        return;
+}
+
 
 key_t getProcessQueue()
 {
@@ -58,6 +71,7 @@ int main(int argc, char *argv[])
         bool received=receiveProcess(ProcessQueue,receivedProcess);
         //printf("recieved at clock =  %d\n",getClk());
         if(received == true){
+            CreateProcessChild(receivedProcess->runningtime);
             //printf("recieved at clock =  %d\n",getClk());
             //printf("%d  %d  %d  %d\n",receivedProcess->id,receivedProcess->arrivaltime,receivedProcess->runningtime,receivedProcess->priority );        
         }
