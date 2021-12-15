@@ -36,7 +36,7 @@ typedef struct process
 {
     int arrivaltime;
     int priority;
-    int time;
+    int remainingtime;
     int id;
 } process;
 
@@ -76,14 +76,14 @@ process *createProcess(int arrivalTime, int pr, int remtime, int pid)
     process *p = malloc(sizeof(*p));
     p->arrivaltime = arrivalTime;
     p->priority = pr;
-    p->time = remtime;
+    p->remainingtime = remtime;
     p->id = pid;
     return p;
 }
 
 bool timeCompare(process *a, process *b)
 {
-    return (a->time > b->time);
+    return (a->remainingtime > b->remainingtime);
 }
 
 /*
