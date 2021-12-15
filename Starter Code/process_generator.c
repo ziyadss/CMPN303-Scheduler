@@ -54,7 +54,7 @@ int main(int argc, char *argv[])
                 {
                     strncpy(lineCopied, line + j + 1, sizeof(line) - j + 2);
                     flag = true;
-                    pData->time = (int)atoi(lineCopied);
+                    pData->remainingtime = (int)atoi(lineCopied);
                 }
                 if (numberOfTabs == 3 && flag == true)
                 {
