@@ -1,5 +1,6 @@
 #include "headers.h"
 
+
 void clearResources(int);
 
 int msgUpQueueID;
@@ -81,10 +82,11 @@ int main(int argc, char *argv[])
     else
     {
         int pidSched, stat_loc_Sched;
+        char * arr=convertIntegerToChar(numberOfProcesses);
         pidSched = fork();
         if (pidSched == 0)
         { //2nd child: scheduler creation
-            char *argsScheduler[] = {"./scheduler.out", NULL};
+            char *argsScheduler[] = {"./scheduler.out", arr,NULL};
             execv(argsScheduler[0], argsScheduler);
         }
 
@@ -119,7 +121,7 @@ int main(int argc, char *argv[])
                             }
                     pData2 = peekCQ(dataQueue);
                     procNumber++;
-                    printf("%d at %d\n",procNumber,x);
+                    //printf("%d at %d\n",procNumber,x);
                     // while(dataQueue->first!=NULL && pData2->arrivaltime==x){
                     //     if(dataQueue->first==NULL){
                     //         printf("my null\n");

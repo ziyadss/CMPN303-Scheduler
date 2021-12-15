@@ -17,7 +17,7 @@ key_t getProcessQueue()
 bool receiveProcess(key_t ProcessQueue, struct processData *receivedProcess)
 {
     int rec_val;
-    rec_val = msgrcv(ProcessQueue, & *receivedProcess, sizeof(*receivedProcess), 0, IPC_NOWAIT);
+    rec_val = msgrcv(ProcessQueue, & *receivedProcess, sizeof(*receivedProcess), 0, !IPC_NOWAIT);
 
     if (rec_val == -1 )
     {
@@ -50,18 +50,17 @@ int getPriority(int algorithmNumber, struct processData *receivedProcess)
 int main(int argc, char *argv[])
 {
     initClk();
-    //printf("recieved at clock =  %d\n",getClk());
     int rec_val;
+    struct PriorityQueue *queue = createPQ(atoi(argv[1]));
     key_t ProcessQueue = getProcessQueue();
     while(true){
         struct processData *receivedProcess =malloc(sizeof(struct processData));;
         bool received=receiveProcess(ProcessQueue,receivedProcess);
-
+        //printf("recieved at clock =  %d\n",getClk());
         if(received == true){
             //printf("recieved at clock =  %d\n",getClk());
-            printf("%d  %d  %d  %d\n",receivedProcess->id,receivedProcess->arrivaltime,receivedProcess->runningtime,receivedProcess->priority );        
+            //printf("%d  %d  %d  %d\n",receivedProcess->id,receivedProcess->arrivaltime,receivedProcess->runningtime,receivedProcess->priority );        
         }
-        sleep(1);
     }
     
 
