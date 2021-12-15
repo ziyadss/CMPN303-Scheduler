@@ -112,10 +112,14 @@ int main(int argc, char *argv[])
                 if (pData2->arrivaltime == x)
                 {
                     dequeueCQ(dataQueue);
-                    sendVal = msgsnd(msgUpQueueID, pData2, sizeof(pData2), !IPC_NOWAIT);
+                    sendVal = msgsnd(msgUpQueueID, & *pData2, sizeof(*pData2), !IPC_NOWAIT);
+                            if(sendVal==-1){
+                                perror("error sending messageUP");
+                                exit(-1);
+                            }
                     pData2 = peekCQ(dataQueue);
                     procNumber++;
-                    //printf("%d at %d\n",procNumber,x);
+                    printf("%d at %d\n",procNumber,x);
                     // while(dataQueue->first!=NULL && pData2->arrivaltime==x){
                     //     if(dataQueue->first==NULL){
                     //         printf("my null\n");
