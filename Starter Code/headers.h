@@ -15,12 +15,9 @@
 #include <time.h>
 #include <string.h>
 
-#include "../Data Structures/CircularQueue.c"
-#include "../Data Structures/PriorityQueue.c"
-
-/* 
+/*
     TODO:
-    
+
     Have a predicate function passed to createPQ to use for that instance for priorities? (Ask Abdo?)
 
     Do I have queues use buffers for peek & dequeue, returning -1 for failures?
@@ -35,11 +32,19 @@ typedef enum
     true
 } bool;
 
+typedef struct process
+{
+    int arrivaltime;
+    int priority;
+    int time;
+    int id;
+} process;
+
 #define SHKEY 300
 #define MSGPROCSCED 400
 
 ///==============================
-//don't mess with this variable//
+// don't mess with this variable//
 int *shmaddr; //
 //===============================
 
@@ -51,19 +56,34 @@ int getClk()
 /*
  * All process call this function at the beginning to establish communication between them and the clock module.
  * Again, remember that the clock is only emulation!
-*/
+ */
 void initClk()
 {
     int shmid = shmget(SHKEY, 4, 0444);
-    //printf("hello\n");
+    // printf("hello\n");
     while ((int)shmid == -1)
     {
-        //Make sure that the clock exists
+        // Make sure that the clock exists
         printf("Wait! The clock not initialized yet!\n");
         sleep(1);
         shmid = shmget(SHKEY, 4, 0444);
     }
     shmaddr = (int *)shmat(shmid, NULL, 0);
+}
+
+process *createProcess(int arrivalTime, int pr, int remtime, int pid)
+{
+    process *p = malloc(sizeof(*p));
+    p->arrivaltime = arrivalTime;
+    p->priority = pr;
+    p->time = remtime;
+    p->id = pid;
+    return p;
+}
+
+bool timeCompare(process *a, process *b)
+{
+    return (a->time > b->time);
 }
 
 /*
@@ -72,7 +92,7 @@ void initClk()
  * Again, Remember that the clock is only emulation!
  * Input: terminateAll: a flag to indicate whether that this is the end of simulation.
  *                      It terminates the whole system and releases resources.
-*/
+ */
 
 void destroyClk(bool terminateAll)
 {
