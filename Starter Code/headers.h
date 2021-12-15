@@ -35,6 +35,14 @@ typedef enum
     true
 } bool;
 
+struct processData
+{
+    int arrivaltime;
+    int priority;
+    int runningtime;
+    int id;
+};
+
 #define SHKEY 300
 #define MSGPROCSCED 400
 

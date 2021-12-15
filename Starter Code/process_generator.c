@@ -2,13 +2,6 @@
 
 void clearResources(int);
 
-struct processData
-{
-    int arrivaltime;
-    int priority;
-    int runningtime;
-    int id;
-};
 int msgUpQueueID;
 
 int main(int argc, char *argv[])
