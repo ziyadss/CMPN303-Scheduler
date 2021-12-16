@@ -16,7 +16,7 @@ key_t getProcessQueue()
     return ProcessQueue;
 }
 
-bool receiveProcess(key_t ProcessQueue, struct processData *receivedProcess)
+bool receiveProcess(key_t ProcessQueue, process *receivedProcess)
 {
     int rec_val;
     rec_val = msgrcv(ProcessQueue, &receivedProcess, sizeof(receivedProcess), 0, IPC_NOWAIT);
@@ -30,7 +30,7 @@ bool receiveProcess(key_t ProcessQueue, struct processData *receivedProcess)
     // printf("process received\n");
     return true;
 }
-int getPriority(int algorithmNumber, struct processData *receivedProcess)
+int getPriority(int algorithmNumber, process *receivedProcess)
 {
     int chpf=0,csrtn=0,crr=0;
     switch(algorithmNumber){
@@ -44,7 +44,7 @@ int getPriority(int algorithmNumber, struct processData *receivedProcess)
         crr=1;
         break;
     }
-    int priority=chpf*receivedProcess->priority+csrtn*receivedProcess->runningtime+crr*receivedProcess->arrivaltime;
+    int priority=chpf*receivedProcess->priority+csrtn*receivedProcess->remainingtime+crr*receivedProcess->arrivaltime;
     return priority;
 }
 
@@ -56,10 +56,10 @@ int main(int argc, char *argv[])
     // initClk();
     int rec_val;
     key_t ProcessQueue = getProcessQueue();
-    struct processData *receivedProcess=malloc(sizeof(struct processData));
+    process *receivedProcess=malloc(sizeof(process));
 
-    //TODO implement the scheduler :)
-    //upon termination release the clock resources
+    // TODO implement the scheduler :)
+    // upon termination release the clock resources
 
     //destroyClk(true);
 

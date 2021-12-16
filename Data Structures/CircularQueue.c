@@ -2,23 +2,23 @@
 
 #include "../Starter Code/headers.h"
 
-struct CircularNode
+typedef struct CircularNode
 {
-    void *data;
+    process *p;
     struct CircularNode *prev, *next;
-};
+} CircularNode;
 
-struct CircularQueue
+typedef struct CircularQueue
 {
-    struct CircularNode *first;
-};
+    CircularNode *first;
+} CircularQueue;
 
 /**
  * @brief Create a CicularQueue object
- * 
- * @return struct CircularQueue* 
+ *
+ * @return struct CircularQueue*
  */
-struct CircularQueue *createCQ()
+CircularQueue *createCQ()
 {
     struct CircularQueue *queue = malloc(sizeof(*queue));
     queue->first = NULL;
@@ -27,14 +27,14 @@ struct CircularQueue *createCQ()
 
 /**
  * @brief Enqueues data into the queue passed
- * 
- * @param queue 
- * @param data 
+ *
+ * @param queue
+ * @param data
  */
-void enqueueCQ(struct CircularQueue *queue, void *data)
+void enqueueCQ(struct CircularQueue *queue, process *p)
 {
     struct CircularNode *node = malloc(sizeof(*node));
-    node->data = data;
+    node->p = p;
 
     if (queue->first)
     {
@@ -53,28 +53,28 @@ void enqueueCQ(struct CircularQueue *queue, void *data)
 
 /**
  * @brief Returns data from the first node in a queue
- * 
- * @param queue 
- * @return void* 
+ *
+ * @param queue
+ * @return process*
  */
-void *peekCQ(struct CircularQueue *queue)
+process *peekCQ(struct CircularQueue *queue)
 {
-    return (queue->first) ? queue->first->data : NULL;
+    return (queue->first) ? queue->first->p : NULL;
 }
 
 /**
  * @brief Removed the first node in a queue and returns its data
- * 
- * @param queue 
- * @return void* 
+ *
+ * @param queue
+ * @return process*
  */
-void *dequeueCQ(struct CircularQueue *queue)
+process *dequeueCQ(struct CircularQueue *queue)
 {
     if (queue->first == NULL)
         return NULL;
 
-    struct CircularNode *node = queue->first;
-    void *data = node->data;
+    CircularNode *node = queue->first;
+    process *data = node->p;
 
     if (node == node->next)
         queue->first = NULL;
@@ -90,8 +90,8 @@ void *dequeueCQ(struct CircularQueue *queue)
 
 /**
  * @brief Frees up memory allocated for a queue
- * 
- * @param queue 
+ *
+ * @param queue
  */
 void freeCQ(struct CircularQueue *queue)
 {

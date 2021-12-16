@@ -6,26 +6,20 @@ size_t parent(const size_t i) { return (i - 1) / 2; }
 size_t left(const size_t i) { return 2 * i + 1; }
 size_t right(const size_t i) { return 2 * i + 2; }
 
-struct PriorityNode
+typedef struct PriorityQueue
 {
-    void *data;
-    u_int8_t priority;
-};
-
-struct PriorityQueue
-{
-    struct PriorityNode **nodes;
     size_t size;
     size_t capacity;
-};
+    process **nodes;
+} PriorityQueue;
 
 /**
- * @brief 
- * 
- * @param queue 
- * @param i 
+ * @brief
+ *
+ * @param queue
+ * @param i
  */
-void minHeapify(struct PriorityQueue *queue, size_t i)
+void minHeapify(PriorityQueue *queue, size_t i)
 {
     size_t l = left(i), r = right(i);
 
@@ -38,7 +32,7 @@ void minHeapify(struct PriorityQueue *queue, size_t i)
 
     if (smallest != i)
     {
-        struct PriorityNode *tmp = queue->nodes[i];
+        process *tmp = queue->nodes[i];
         queue->nodes[i] = queue->nodes[smallest];
         queue->nodes[smallest] = tmp;
         minHeapify(queue, smallest);
@@ -46,14 +40,14 @@ void minHeapify(struct PriorityQueue *queue, size_t i)
 };
 
 /**
- * @brief 
- * 
- * @param queue 
- * @param i 
- * @param priority 
- * @return int 
+ * @brief
+ *
+ * @param queue
+ * @param i
+ * @param priority
+ * @return int
  */
-int decreasePriority(struct PriorityQueue *queue, size_t i, u_int8_t priority)
+int decreasePriority(PriorityQueue *queue, size_t i, u_int8_t priority)
 {
     if (priority > queue->nodes[i]->priority)
         return -1;
@@ -62,7 +56,7 @@ int decreasePriority(struct PriorityQueue *queue, size_t i, u_int8_t priority)
 
     while (i > 0 && queue->nodes[parent(i)]->priority > queue->nodes[i]->priority)
     {
-        struct PriorityNode *tmp = queue->nodes[i];
+        process *tmp = queue->nodes[i];
         queue->nodes[i] = queue->nodes[parent(i)];
         queue->nodes[parent(i)] = tmp;
         i = parent(i);
@@ -71,14 +65,14 @@ int decreasePriority(struct PriorityQueue *queue, size_t i, u_int8_t priority)
 }
 
 /**
- * @brief 
- * 
- * @param capacity 
- * @return struct PriorityQueue* 
+ * @brief
+ *
+ * @param capacity
+ * @return struct PriorityQueue*
  */
-struct PriorityQueue *createPQ(size_t capacity)
+PriorityQueue *createPQ(size_t capacity)
 {
-    struct PriorityQueue *queue = malloc(sizeof(*queue));
+    PriorityQueue *queue = malloc(sizeof(*queue));
     queue->nodes = malloc(sizeof(*(queue->nodes)) * capacity);
     queue->size = 0;
     queue->capacity = capacity;
@@ -87,69 +81,60 @@ struct PriorityQueue *createPQ(size_t capacity)
 }
 
 /**
- * @brief 
- * 
- * @param queue 
- * @param data 
- * @param priority 
- * @return int 
+ * @brief
+ *
+ * @param queue
+ * @param data
+ * @param priority
+ * @return int
  */
-int enqueuePQ(struct PriorityQueue *queue, void *data, u_int8_t priority)
+int enqueuePQ(PriorityQueue *queue, process *node)
 {
     if (queue->size == queue->capacity)
         return -1;
 
-    struct PriorityNode *node = malloc(sizeof(*node));
-    node->data = data;
-    node->priority = __UINT8_MAX__;
-
     queue->nodes[queue->size++] = node;
-    return decreasePriority(queue, queue->size - 1, priority);
+    return decreasePriority(queue, queue->size - 1, node->priority);
 }
 
 /**
- * @brief 
- * 
- * @param queue 
- * @return void* 
+ * @brief
+ *
+ * @param queue
+ * @return process*
  */
-void *peekPQ(struct PriorityQueue *queue)
+process *peekPQ(PriorityQueue *queue)
 {
-    return (queue->size) ? queue->nodes[0]->data : NULL;
+    return (queue->size) ? queue->nodes[0] : NULL;
 }
 
 /**
- * @brief 
- * 
- * @param queue 
- * @return void* 
+ * @brief
+ *
+ * @param queue
+ * @return process*
  */
-void *dequeuePQ(struct PriorityQueue *queue)
+process *dequeuePQ(PriorityQueue *queue)
 {
     if (queue->size == 0)
         return NULL;
 
-    struct PriorityNode *min = queue->nodes[0];
-    void *data = min->data;
+    process *min = queue->nodes[0];
 
     queue->nodes[0] = queue->nodes[--queue->size];
     minHeapify(queue, 0);
-
-    free(min);
-    return data;
+    // free when
+    return min;
 }
 
 /**
- * @brief 
- * 
- * @param queue 
- * @return int 
+ * @brief
+ *
+ * @param queue
+ * @return int
  */
-int freePQ(struct PriorityQueue *queue)
+int freePQ(PriorityQueue *queue)
 {
-    while (queue->size)
-        dequeuePQ(queue);
-
     queue->capacity = 0;
     free(queue->nodes);
     free(queue);
@@ -158,13 +143,15 @@ int freePQ(struct PriorityQueue *queue)
 
 // int main()
 // {
-//     struct PriorityQueue *queue = createPQ(3);
+//     PriorityQueue *queue = createPQ(3);
 
-//     int x = 1, y = 2, z = 3;
+//     process *x = createProcess(8, 3, 2 , 3);
+//     process *y = createProcess(0, 1, 6, 7);
+//     process *z = createProcess(4, 2, 10, 11);
 
-//     enqueuePQ(queue, &x, 3);
-//     enqueuePQ(queue, &y, 2);
-//     enqueuePQ(queue, &z, 1);
+//     enqueuePQ(queue, x);
+//     enqueuePQ(queue, y);
+//     enqueuePQ(queue, z);
 
 //     printf("%d\n", *(int *)dequeuePQ(queue));
 //     printf("%d\n", *(int *)dequeuePQ(queue));

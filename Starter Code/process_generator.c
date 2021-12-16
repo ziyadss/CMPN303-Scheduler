@@ -1,5 +1,7 @@
 #include "headers.h"
 
+#include "../Data Structures/CircularQueue.c"
+
 void clearResources(int);
 
 int msgUpQueueID;
@@ -26,7 +28,7 @@ int main(int argc, char *argv[])
     int i = 0;
     while ((read = getline(&line, &len, pFile)) != -1)
     {
-        struct processData *pData = malloc(sizeof(struct processData));
+        process *pData = malloc(sizeof(process));
         if (line[0] != '#')
         {
             numberOfProcesses++;
@@ -44,7 +46,7 @@ int main(int argc, char *argv[])
                 if (numberOfTabs == 1 && flag == true)
                 {
                     strncpy(lineCopied, line + j + 1, sizeof(line) - j + 2);
-                    //printf("\nmodified is %s\n",lineCopied);
+                    // printf("\nmodified is %s\n",lineCopied);
                     flag = false;
                     pData->arrivaltime = atoi(lineCopied);
                 }
@@ -52,7 +54,7 @@ int main(int argc, char *argv[])
                 {
                     strncpy(lineCopied, line + j + 1, sizeof(line) - j + 2);
                     flag = true;
-                    pData->runningtime = (int)atoi(lineCopied);
+                    pData->remainingtime = (int)atoi(lineCopied);
                 }
                 if (numberOfTabs == 3 && flag == true)
                 {
@@ -62,7 +64,7 @@ int main(int argc, char *argv[])
                 }
             }
             enqueueCQ(dataQueue, pData);
-            struct processData *pData2 = peekCQ(dataQueue);
+            process *pData2 = peekCQ(dataQueue);
             // printf("%d  %d  %d  %d\n",pData2->id,pData2->arrivaltime,pData2->runningtime,pData2->priority );
             i++;
         }
@@ -74,7 +76,7 @@ int main(int argc, char *argv[])
     int pidClk, stat_loc_Clk;
     pidClk = fork();
     if (pidClk == 0)
-    { //1st child: clock creation
+    { // 1st child: clock creation
         char *argsClk[] = {"./clk.out", NULL};
         execv(argsClk[0], argsClk);
     }
@@ -83,16 +85,16 @@ int main(int argc, char *argv[])
         int pidSched, stat_loc_Sched;
         pidSched = fork();
         if (pidSched == 0)
-        { //2nd child: scheduler creation
+        { // 2nd child: scheduler creation
             char *argsScheduler[] = {"./scheduler.out", NULL};
             execv(argsScheduler[0], argsScheduler);
         }
 
-        //parent process (process generator code)
+        // parent process (process generator code)
         else
         {
             initClk();
-            //int x = getClk();
+            // int x = getClk();
 
             msgUpQueueID = msgget(MSGPROCSCED, 0666 | IPC_CREAT);
             if (msgUpQueueID == -1)
@@ -103,11 +105,11 @@ int main(int argc, char *argv[])
 
             int procNumber = 0;
             int sendVal;
-            //printf("size is %d \n",numberOfProcesses);
+            // printf("size is %d \n",numberOfProcesses);
             while (numberOfProcesses > procNumber)
             {
                 int x = getClk();
-                struct processData *pData2 = peekCQ(dataQueue);
+                process *pData2 = peekCQ(dataQueue);
 
                 if (pData2->arrivaltime == x)
                 {
@@ -115,20 +117,20 @@ int main(int argc, char *argv[])
                     sendVal = msgsnd(msgUpQueueID, pData2, sizeof(pData2), !IPC_NOWAIT);
                     pData2 = peekCQ(dataQueue);
                     procNumber++;
-                    //printf("%d at %d\n",procNumber,x);
-                    // while(dataQueue->first!=NULL && pData2->arrivaltime==x){
-                    //     if(dataQueue->first==NULL){
-                    //         printf("my null\n");
-                    //         pData2->arrivaltime=0;
-                    //     }
-                    //     else{
-                    //         dequeueCQ(dataQueue);
-                    //         sendVal= msgsnd(msgUpQueueID, pData2,sizeof(pData2),!IPC_NOWAIT);
-                    //         pData2=peekCQ(dataQueue);
-                    //     }
-                    //     procNumber++;
-                    //     //printf("%d at %d   with %d\n ",procNumber,x,pData2->arrivaltime);
-                    // }
+                    // printf("%d at %d\n",procNumber,x);
+                    //  while(dataQueue->first!=NULL && pData2->arrivaltime==x){
+                    //      if(dataQueue->first==NULL){
+                    //          printf("my null\n");
+                    //          pData2->arrivaltime=0;
+                    //      }
+                    //      else{
+                    //          dequeueCQ(dataQueue);
+                    //          sendVal= msgsnd(msgUpQueueID, pData2,sizeof(pData2),!IPC_NOWAIT);
+                    //          pData2=peekCQ(dataQueue);
+                    //      }
+                    //      procNumber++;
+                    //      //printf("%d at %d   with %d\n ",procNumber,x,pData2->arrivaltime);
+                    //  }
                 }
             }
             pidClk = wait(&stat_loc_Clk);
@@ -152,5 +154,5 @@ int main(int argc, char *argv[])
 
 void clearResources(int signum)
 {
-    //TODO Clears all resources in case of interruption
+    // TODO Clears all resources in case of interruption
 }
