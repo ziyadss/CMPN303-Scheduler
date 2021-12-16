@@ -1,6 +1,5 @@
 #include "headers.h"
 
-#include "../Data Structures/CircularQueue.c"
 
 void clearResources(int);
 
@@ -83,10 +82,11 @@ int main(int argc, char *argv[])
     else
     {
         int pidSched, stat_loc_Sched;
+        char * arr=convertIntegerToChar(numberOfProcesses);
         pidSched = fork();
         if (pidSched == 0)
-        { // 2nd child: scheduler creation
-            char *argsScheduler[] = {"./scheduler.out", NULL};
+        { //2nd child: scheduler creation
+            char *argsScheduler[] = {"./scheduler.out", arr,NULL};
             execv(argsScheduler[0], argsScheduler);
         }
 
@@ -114,7 +114,11 @@ int main(int argc, char *argv[])
                 if (pData2->arrivaltime == x)
                 {
                     dequeueCQ(dataQueue);
-                    sendVal = msgsnd(msgUpQueueID, pData2, sizeof(pData2), !IPC_NOWAIT);
+                    sendVal = msgsnd(msgUpQueueID, & *pData2, sizeof(*pData2), !IPC_NOWAIT);
+                            if(sendVal==-1){
+                                perror("error sending messageUP");
+                                exit(-1);
+                            }
                     pData2 = peekCQ(dataQueue);
                     procNumber++;
                     // printf("%d at %d\n",procNumber,x);
@@ -154,5 +158,6 @@ int main(int argc, char *argv[])
 
 void clearResources(int signum)
 {
-    // TODO Clears all resources in case of interruption
+    msgctl(msgUpQueueID,IPC_RMID,NULL);  
+    exit(-1);
 }

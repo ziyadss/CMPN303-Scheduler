@@ -1,11 +1,22 @@
 #include "headers.h"
 
+void CreateProcessChild(int runningTime){
+    int pidProcess, stat_loc_Process;
+    char * arrRunningTime=convertIntegerToChar(runningTime);
+    pidProcess = fork();
+        if (pidProcess == 0)
+        { //2nd child: scheduler creation
+            char *argsProcess[] = {"./process.out",arrRunningTime,NULL};
+            execv(argsProcess[0], argsProcess);
+        }
+        else
+        return;
+}
+
 
 key_t getProcessQueue()
 {
     key_t ProcessQueue;
-    // key_t key=ftok("key file",65);
-    //replace 400 with arwas constant
     ProcessQueue = msgget( MSGPROCSCED, 0666 | IPC_CREAT); // or msgget(12613, IPC_CREAT | 0644)
 
     if (ProcessQueue == -1)
@@ -19,15 +30,16 @@ key_t getProcessQueue()
 bool receiveProcess(key_t ProcessQueue, process *receivedProcess)
 {
     int rec_val;
-    rec_val = msgrcv(ProcessQueue, &receivedProcess, sizeof(receivedProcess), 0, IPC_NOWAIT);
+    rec_val = msgrcv(ProcessQueue, & *receivedProcess, sizeof(*receivedProcess), 0, !IPC_NOWAIT);
 
     if (rec_val == -1 )
     {
         // also check if message is empty
-        // printf("process not received\n");
+        //printf("process not received\n");
         return false;
     }
-    // printf("process received\n");
+    //printf("process received\n");
+    //printf("ID %d  %d  %d  %d\n",receivedProcess->id,receivedProcess->arrivaltime,receivedProcess->runningtime,receivedProcess->priority );        
     return true;
 }
 int getPriority(int algorithmNumber, process *receivedProcess)
@@ -51,28 +63,36 @@ int getPriority(int algorithmNumber, process *receivedProcess)
 int main(int argc, char *argv[])
 {
     initClk();
-    //printf("hello");
-    // printf("hello");
-    // initClk();
     int rec_val;
+    struct PriorityQueue *queue = createPQ(atoi(argv[1]));
     key_t ProcessQueue = getProcessQueue();
-    process *receivedProcess=malloc(sizeof(process));
+    while(true){
+        struct processData *receivedProcess =malloc(sizeof(struct processData));;
+        bool received=receiveProcess(ProcessQueue,receivedProcess);
+        //printf("recieved at clock =  %d\n",getClk());
+        if(received == true){
+            CreateProcessChild(receivedProcess->runningtime);
+            //printf("creating at clock =  %d\n",getClk());
+            //printf("%d  %d  %d  %d\n",receivedProcess->id,receivedProcess->arrivaltime,receivedProcess->runningtime,receivedProcess->priority );        
+        }
+    }
+    
+
 
     // TODO implement the scheduler :)
     // upon termination release the clock resources
 
     //destroyClk(true);
 
-    bool received=receiveProcess(ProcessQueue,receivedProcess);
 
 
-    int algorithmNumber=atoi(argv[1]);
+    //int algorithmNumber=atoi(argv[1]);
     // printf(" algorithm number recieved is %d", algorithmNumber );
     // create empty priority queue
     // enqueue process in priority queue
-    int priority=getPriority(algorithmNumber,receivedProcess);
+    //int priority=getPriority(algorithmNumber,receivedProcess);
     // struct CircularQueue *ReadyQueue= createQueue();
     // set priority and set priority queue data with recieved data
 
-    destroyClk(true);
+    //destroyClk(true);
 }
