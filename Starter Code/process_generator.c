@@ -1,16 +1,10 @@
 #include "headers.h"
+#include "../Data Structures/PriorityQueue.c"
+#include "../Data Structures/CircularQueue.c"
 
 
 void clearResources(int);
 
-
-struct processData
-{
-    int arrivaltime;
-    int priority;
-    int runningtime;
-    int id;
-};
 int msgUpQueueID;
 
 int main(int argc, char *argv[])
@@ -19,114 +13,130 @@ int main(int argc, char *argv[])
     // TODO Initialization
     // 1. Read the input files.
     FILE *pFile;
-    char * line = NULL;
+    char *line = NULL;
     size_t len = 0;
-    struct CircularQueue *dataQueue = createQueue();
-    int numberOfProcesses=0;
+    struct CircularQueue *dataQueue = createCQ();
+    int numberOfProcesses = 0;
     ssize_t read;
     pFile = fopen("processes.txt", "r");
 
-    if (pFile == NULL)  // case couldn't read file
+    if (pFile == NULL) // case couldn't read file
     {
         printf("Error! Could not open file\n");
         exit(-1);
     }
 
-    int i =0;
-    while ((read = getline(&line, &len, pFile)) != -1) {
-        struct processData *pData = malloc(sizeof(struct processData));
-        if(line[0]!= '#'){
+    int i = 0;
+    while ((read = getline(&line, &len, pFile)) != -1)
+    {
+        process *pData = malloc(sizeof(process));
+        if (line[0] != '#')
+        {
             numberOfProcesses++;
-            int s=atoi(line);
-            pData->id=s;
-            int numberOfTabs=0;
-            bool flag=true;
+            int s = atoi(line);
+            pData->id = s;
+            int numberOfTabs = 0;
+            bool flag = true;
             char lineCopied[len];
-            for(int j=1; j<len ;j++){
-                 if(line[j]=='\t'){
+            for (int j = 1; j < len; j++)
+            {
+                if (line[j] == '\t')
+                {
                     numberOfTabs++;
-                 }
-                  if(numberOfTabs==1 && flag==true){
-                      strncpy(lineCopied, line + j+1, sizeof(line) - j +2);
-                      //printf("\nmodified is %s\n",lineCopied);
-                      flag=false;
-                      pData->arrivaltime=atoi(lineCopied);
-                  }
-                    if(numberOfTabs==2 && flag==false){
-                        strncpy(lineCopied, line + j+ 1, sizeof(line) - j +2);
-                        flag=true;
-                        pData->runningtime=(int)atoi(lineCopied);
-                    }
-                    if(numberOfTabs==3 && flag==true){
-                       strncpy(lineCopied, line + j+ 1, sizeof(line) - j +2);
-                       flag=false;
-                       pData->priority=(int)atoi(lineCopied);
-                    }
+                }
+                if (numberOfTabs == 1 && flag == true)
+                {
+                    strncpy(lineCopied, line + j + 1, sizeof(line) - j + 2);
+                    // printf("\nmodified is %s\n",lineCopied);
+                    flag = false;
+                    pData->arrivaltime = atoi(lineCopied);
+                }
+                if (numberOfTabs == 2 && flag == false)
+                {
+                    strncpy(lineCopied, line + j + 1, sizeof(line) - j + 2);
+                    flag = true;
+                    pData->remainingtime = (int)atoi(lineCopied);
+                }
+                if (numberOfTabs == 3 && flag == true)
+                {
+                    strncpy(lineCopied, line + j + 1, sizeof(line) - j + 2);
+                    flag = false;
+                    pData->priority = (int)atoi(lineCopied);
+                }
             }
-        enqueue(dataQueue, pData);
-        struct processData *pData2=peek(dataQueue);
-       // printf("%d  %d  %d  %d\n",pData2->id,pData2->arrivaltime,pData2->runningtime,pData2->priority );
-        i++;
+            enqueueCQ(dataQueue, pData);
+            process *pData2 = peekCQ(dataQueue);
+            // printf("%d  %d  %d  %d\n",pData2->id,pData2->arrivaltime,pData2->runningtime,pData2->priority );
+            i++;
         }
     }
     fclose(pFile);
-
-
 
     // 2. Ask the user for the chosen scheduling algorithm and its parameters, if there are any.
     // 3. Initiate and create the scheduler and clock processes.
     int pidClk, stat_loc_Clk;
     pidClk = fork();
-    if(pidClk==0){  //1st child: clock creation
-        char *argsClk[]={"./clk.out",NULL};
-        execv(argsClk[0],argsClk);
+    if (pidClk == 0)
+    { // 1st child: clock creation
+        char *argsClk[] = {"./clk.out", NULL};
+        execv(argsClk[0], argsClk);
     }
     else
     {
         int pidSched, stat_loc_Sched;
-        pidSched=fork();
-        if(pidSched==0){ //2nd child: scheduler creation
-            char *argsScheduler[]={"./scheduler.out",NULL};
-            execv(argsScheduler[0],argsScheduler);
+        char * arr=convertIntegerToChar(numberOfProcesses);
+        pidSched = fork();
+        if (pidSched == 0)
+        { //2nd child: scheduler creation
+            char *argsScheduler[] = {"./scheduler.out", arr,NULL};
+            execv(argsScheduler[0], argsScheduler);
         }
 
-        //parent process (process generator code)
-        else{
+        // parent process (process generator code)
+        else
+        {
             initClk();
-            //int x = getClk();
+            // int x = getClk();
 
-            msgUpQueueID=msgget(MSGPROCSCED , 0666 | IPC_CREAT);
-            if(msgUpQueueID == -1){
-                printf ("error in creation of up message queue");
+            msgUpQueueID = msgget(MSGPROCSCED, 0666 | IPC_CREAT);
+            if (msgUpQueueID == -1)
+            {
+                printf("error in creation of up message queue");
                 exit(-1);
             }
 
-            int procNumber=0;
+            int procNumber = 0;
             int sendVal;
-            //printf("size is %d \n",numberOfProcesses);
-            while(numberOfProcesses>procNumber){
-                int x =getClk();
-                struct processData *pData2=peek(dataQueue);
+            // printf("size is %d \n",numberOfProcesses);
+            while (numberOfProcesses > procNumber)
+            {
+                int x = getClk();
+                process *pData2 = peekCQ(dataQueue);
 
-                if(pData2->arrivaltime==x){
-                    dequeue(dataQueue);
-                    sendVal= msgsnd(msgUpQueueID, pData2,sizeof(pData2),!IPC_NOWAIT);
-                    pData2=peek(dataQueue);
+                if (pData2->arrivaltime == x)
+                {
+                    dequeueCQ(dataQueue);
+                    sendVal = msgsnd(msgUpQueueID, & *pData2, sizeof(*pData2), !IPC_NOWAIT);
+                            if(sendVal==-1){
+                                perror("error sending messageUP");
+                                exit(-1);
+                            }
+                    pData2 = peekCQ(dataQueue);
                     procNumber++;
-                    //printf("%d at %d\n",procNumber,x);
-                    // while(dataQueue->first!=NULL && pData2->arrivaltime==x){
-                    //     if(dataQueue->first==NULL){
-                    //         printf("my null\n");
-                    //         pData2->arrivaltime=0;
-                    //     }
-                    //     else{
-                    //         dequeue(dataQueue);
-                    //         sendVal= msgsnd(msgUpQueueID, pData2,sizeof(pData2),!IPC_NOWAIT);
-                    //         pData2=peek(dataQueue);
-                    //     }
-                    //     procNumber++;
-                    //     //printf("%d at %d   with %d\n ",procNumber,x,pData2->arrivaltime);
-                    // }
+                    // printf("%d at %d\n",procNumber,x);
+                    //  while(dataQueue->first!=NULL && pData2->arrivaltime==x){
+                    //      if(dataQueue->first==NULL){
+                    //          printf("my null\n");
+                    //          pData2->arrivaltime=0;
+                    //      }
+                    //      else{
+                    //          dequeueCQ(dataQueue);
+                    //          sendVal= msgsnd(msgUpQueueID, pData2,sizeof(pData2),!IPC_NOWAIT);
+                    //          pData2=peekCQ(dataQueue);
+                    //      }
+                    //      procNumber++;
+                    //      //printf("%d at %d   with %d\n ",procNumber,x,pData2->arrivaltime);
+                    //  }
                 }
             }
             pidClk = wait(&stat_loc_Clk);
@@ -141,7 +151,6 @@ int main(int argc, char *argv[])
     int x = getClk();
     printf("current time is %d\n", x);
 
-
     // TODO Generation Main Loop
     // 5. Create a data structure for processes and provide it with its parameters.
     // 6. Send the information to the scheduler at the appropriate time.
@@ -151,5 +160,6 @@ int main(int argc, char *argv[])
 
 void clearResources(int signum)
 {
-    //TODO Clears all resources in case of interruption
+    msgctl(msgUpQueueID,IPC_RMID,NULL);  
+    exit(-1);
 }
