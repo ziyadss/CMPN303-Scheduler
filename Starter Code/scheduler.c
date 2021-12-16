@@ -1,15 +1,18 @@
 #include "headers.h"
+#include "../Data Structures/PriorityQueue.c"
+#include "../Data Structures/CircularQueue.c"
 
-void CreateProcessChild(int runningTime){
+void CreateProcessChild(int remainingtime){
     int pidProcess, stat_loc_Process;
-    char * arrRunningTime=convertIntegerToChar(runningTime);
+    char * arrremainingtime=convertIntegerToChar(remainingtime);
     pidProcess = fork();
         if (pidProcess == 0)
         { //2nd child: scheduler creation
-            char *argsProcess[] = {"./process.out",arrRunningTime,NULL};
+            char *argsProcess[] = {"./process.out",arrremainingtime,NULL};
             execv(argsProcess[0], argsProcess);
         }
         else
+        
         return;
 }
 
@@ -39,7 +42,7 @@ bool receiveProcess(key_t ProcessQueue, process *receivedProcess)
         return false;
     }
     //printf("process received\n");
-    //printf("ID %d  %d  %d  %d\n",receivedProcess->id,receivedProcess->arrivaltime,receivedProcess->runningtime,receivedProcess->priority );        
+    //printf("ID %d  %d  %d  %d\n",receivedProcess->id,receivedProcess->arrivaltime,receivedProcess->remainingtime,receivedProcess->priority );        
     return true;
 }
 int getPriority(int algorithmNumber, process *receivedProcess)
@@ -67,13 +70,13 @@ int main(int argc, char *argv[])
     struct PriorityQueue *queue = createPQ(atoi(argv[1]));
     key_t ProcessQueue = getProcessQueue();
     while(true){
-        struct processData *receivedProcess =malloc(sizeof(struct processData));;
+        process *receivedProcess =malloc(sizeof(process));;
         bool received=receiveProcess(ProcessQueue,receivedProcess);
         //printf("recieved at clock =  %d\n",getClk());
         if(received == true){
-            CreateProcessChild(receivedProcess->runningtime);
+            CreateProcessChild(receivedProcess->remainingtime);
             //printf("creating at clock =  %d\n",getClk());
-            //printf("%d  %d  %d  %d\n",receivedProcess->id,receivedProcess->arrivaltime,receivedProcess->runningtime,receivedProcess->priority );        
+            //printf("%d  %d  %d  %d\n",receivedProcess->id,receivedProcess->arrivaltime,receivedProcess->remainingtime,receivedProcess->priority );        
         }
     }
     

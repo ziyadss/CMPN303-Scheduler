@@ -1,4 +1,6 @@
 #include "headers.h"
+#include "../Data Structures/PriorityQueue.c"
+#include "../Data Structures/CircularQueue.c"
 
 
 void clearResources(int);
