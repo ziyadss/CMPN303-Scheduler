@@ -1,18 +1,19 @@
 #include "headers.h"
-#include "../Data Structures/PriorityQueue.c"
-#include "../Data Structures/CircularQueue.c"
+#include "PriorityQueue.c"
+#include "CircularQueue.c"
 bool isBusy = false;
 
-void handler(int signum);
+void handler();
 void CreateProcessChild(process *recievedProcess)
 {
     int pidProcess, stat_loc_Process;
-    char *arrremainingtime = convertIntegerToChar(recievedProcess->remainingtime);
+
     pidProcess = fork();
     if (pidProcess == 0)
     { //2nd child: forked process
-        char *argsProcess[] = {"./process.out", arrremainingtime, NULL};
-        execv(argsProcess[0], argsProcess);
+        char arrremainingtime[] = {[0 ... 10] = '\0'};
+        sprintf(arrremainingtime, "%d", recievedProcess->remainingtime);
+        execl("bin/process.out", "process.out", arrremainingtime, NULL);
     }
     else
     { // parent code: scheduler
@@ -29,7 +30,7 @@ key_t getProcessQueue()
 
     if (ProcessQueue == -1)
     {
-        printf("msg queue not found\n");
+        perror("Error finding message queue from scheduler");
         exit(-1);
     }
     return ProcessQueue;
@@ -85,7 +86,7 @@ void HighestPriorityFirst(struct PriorityQueue *Processes)
         {
             isBusy = true;
             kill(runningProcess->processID, SIGCONT);
-            printf("process %d started at time = %d\n", runningProcess->id, getClk());
+            printf("Process %d started at time = %d\n", runningProcess->id, getClk());
         }
     }
     return;
@@ -138,7 +139,7 @@ int main(int argc, char *argv[])
 
     //destroyClk(true);
 }
-void handler(int signum)
+void handler()
 {
     int temppid, status;
     temppid = waitpid(-1, &status, WNOHANG);

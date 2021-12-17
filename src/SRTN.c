@@ -1,5 +1,5 @@
 #include "headers.h"
-#include "../Data Structures/PriorityQueue.c"
+#include "PriorityQueue.c"
 #include "process_generator.c"
 // to do:
 
