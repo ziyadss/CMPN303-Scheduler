@@ -96,7 +96,7 @@ int main(int argc, char *argv[])
         {
             initClk();
             // int x = getClk();
-
+            kill(pidSched,SIGTSTP);
             msgUpQueueID = msgget(MSGPROCSCED, 0666 | IPC_CREAT);
             if (msgUpQueueID == -1)
             {
@@ -138,6 +138,7 @@ int main(int argc, char *argv[])
                     //      procNumber++;
                     //      //printf("%d at %d   with %d\n ",procNumber,x,pData2->arrivaltime);
                     //  }
+                    kill(pidSched,SIGCONT);
                 }
             }
             pidClk = wait(&stat_loc_Clk);
