@@ -1,31 +1,38 @@
 #include "headers.h"
-#include "../Data Structures/PriorityQueue.c"
-#include "../Data Structures/CircularQueue.c"
-struct PCB{
-    char* status;
+
+#include "PriorityQueue.c"
+#include "CircularQueue.c"
+bool isBusy = false;
+
+void handler();
+
+struct PCB
+{
+    char *status;
     process data;
     int excutiontime;
     int waitingtime;
 };
 bool isBusy = false;
 
-void handler(int signum);
-void filehandler(char* status, process *p)
+void filehandler(char *status, process *p)
 {
-    char* s;
+    char *s;
     // sprintf(s,"At time %d process %d %s arr %d total %d remain %d wait %d\n",getClk(),p->id,status,p->arrivaltime,10,p->remainingtime,(int)1);
     // printf("%s",s);
     return;
 }
+
 void CreateProcessChild(process *recievedProcess)
 {
     int pidProcess, stat_loc_Process;
-    char *arrremainingtime = convertIntegerToChar(recievedProcess->remainingtime);
+
     pidProcess = fork();
     if (pidProcess == 0)
     { //2nd child: forked process
-        char *argsProcess[] = {"./process.out", arrremainingtime, NULL};
-        execv(argsProcess[0], argsProcess);
+        char arrremainingtime[] = {[0 ... 10] = '\0'};
+        sprintf(arrremainingtime, "%d", recievedProcess->remainingtime);
+        execl("bin/process.out", "process.out", arrremainingtime, NULL);
     }
     else
     { // parent code: scheduler
@@ -42,7 +49,7 @@ key_t getProcessQueue()
 
     if (ProcessQueue == -1)
     {
-        printf("msg queue not found\n");
+        perror("Error finding message queue from scheduler");
         exit(-1);
     }
     return ProcessQueue;
@@ -98,7 +105,9 @@ void HighestPriorityFirst(struct PriorityQueue *Processes)
         {
             isBusy = true;
             kill(runningProcess->processID, SIGCONT);
-            printf("process %d started at time = %d\n", runningProcess->id, getClk());
+
+            printf("Process %d started at time = %d\n", runningProcess->id, getClk());
+
             raise(SIGTSTP);
         }
     }
@@ -125,7 +134,7 @@ int main(int argc, char *argv[])
             receivedProcess = receiveProcess(ProcessQueue, *receivedProcess);
             if (receivedProcess)
             {
-                
+
                 CreateProcessChild(receivedProcess);
                 enqueuePQ(queue, receivedProcess);
                 printf("recievied process with id = %d with pid = %d at time = %d\n", receivedProcess->id, receivedProcess->processID, getClk());
@@ -160,7 +169,7 @@ int main(int argc, char *argv[])
 
     //destroyClk(true);
 }
-void handler(int signum)
+void handler()
 {
     int temppid, status;
     temppid = waitpid(-1, &status, WNOHANG);

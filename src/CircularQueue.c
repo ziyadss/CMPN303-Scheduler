@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../Starter Code/headers.h"
+#include "headers.h"
 
 typedef struct CircularNode
 {

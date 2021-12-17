@@ -10,7 +10,7 @@
 int shmid;
 
 /* Clear the resources before exit */
-void cleanup(int signum)
+void cleanup()
 {
     shmctl(shmid, IPC_RMID, NULL);
     printf("Clock terminating!\n");
@@ -18,7 +18,7 @@ void cleanup(int signum)
 }
 
 /* This file represents the system clock for ease of calculations */
-int main(int argc, char *argv[])
+int main()
 {
     printf("Clock starting\n");
     signal(SIGINT, cleanup);

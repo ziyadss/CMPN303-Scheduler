@@ -1,12 +1,12 @@
 #include "headers.h"
-#include "../Data Structures/PriorityQueue.c"
-#include "../Data Structures/CircularQueue.c"
+#include "PriorityQueue.c"
+#include "CircularQueue.c"
 
-void clearResources(int);
+void clearResources();
 
 int msgUpQueueID;
 
-int main(int argc, char *argv[])
+int main()
 {
     signal(SIGINT, clearResources);
     // TODO Initialization
@@ -64,7 +64,7 @@ int main(int argc, char *argv[])
                 }
             }
             enqueueCQ(dataQueue, pData);
-            process *pData2 = peekCQ(dataQueue);
+            // process *pData2 = peekCQ(dataQueue);
             // printf("%d  %d  %d  %d\n",pData2->id,pData2->arrivaltime,pData2->runningtime,pData2->priority );
             i++;
         }
@@ -77,18 +77,18 @@ int main(int argc, char *argv[])
     pidClk = fork();
     if (pidClk == 0)
     { // 1st child: clock creation
-        char *argsClk[] = {"./clk.out", NULL};
-        execv(argsClk[0], argsClk);
+        execl("bin/clk.out", "clk.out", NULL);
     }
     else
     {
         int pidSched, stat_loc_Sched;
-        char *arr = convertIntegerToChar(numberOfProcesses);
+
         pidSched = fork();
         if (pidSched == 0)
         { //2nd child: scheduler creation
-            char *argsScheduler[] = {"./scheduler.out", arr, NULL};
-            execv(argsScheduler[0], argsScheduler);
+            char arr[] = {[0 ... 10] = '\0'};
+            sprintf(arr, "%d", numberOfProcesses);
+            execl("bin/scheduler.out", "scheduler.out", arr, NULL);
         }
 
         // parent process (process generator code)
@@ -160,7 +160,7 @@ int main(int argc, char *argv[])
     destroyClk(true);
 }
 
-void clearResources(int signum)
+void clearResources()
 {
     msgctl(msgUpQueueID, IPC_RMID, NULL);
     exit(-1);
