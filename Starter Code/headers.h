@@ -39,7 +39,6 @@ typedef struct process
     int priority;
     int remainingtime;
     int id;
-    int processID;
 } process;
 
 #define SHKEY 300

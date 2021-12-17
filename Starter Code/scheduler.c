@@ -2,15 +2,7 @@
 #include "../Data Structures/PriorityQueue.c"
 #include "../Data Structures/CircularQueue.c"
 bool isBusy = false;
-// struct ProcessControlBlock
-// {
-//     int arrivaltime;
-//     int excutiontime;
-//     int remainingtime;
-//     int waitingtime;
-//     int id;
-//     int status = 0; // 1 for running, 0 for waiting
-// };
+
 void handler(int signum);
 void CreateProcessChild(process *recievedProcess)
 {
@@ -24,10 +16,8 @@ void CreateProcessChild(process *recievedProcess)
     }
     else
     { // parent code: scheduler
-        recievedProcess->processID = pidProcess;
-        // printf("child created with id %d\n",pidProcess);
+        //recievedProcess->processID = pidProcess;
         kill(pidProcess, SIGTSTP);
-        // printf("child stopped");
     }
     return;
 }
@@ -78,60 +68,69 @@ int getPriority(int algorithmNumber, process *receivedProcess)
     int priority = chpf * receivedProcess->priority + csrtn * receivedProcess->remainingtime + crr * receivedProcess->arrivaltime;
     return priority;
 }
-void HighestPriorityFirst(struct PriorityQueue *Processes, process *runningProcess)
+void HighestPriorityFirst(struct PriorityQueue *Processes)
 {
     if (isBusy == false)
     {
-        runningProcess = dequeuePQ(Processes);
+        process *runningProcess = peekPQ(Processes);
+        //process *runningProcess  =malloc(sizeof(process));
+        dequeuePQ(Processes);
         if (runningProcess)
         {
             isBusy = true;
-            kill(runningProcess->processID, SIGCONT);
-            // printf("process %d started with pid %d\n", runningProcess->id, runningProcess->processID);
+            //kill(runningProcess->processID, SIGCONT);
+            printf("process %d started at time = %d\n", runningProcess->id,getClk());
         }
     }
     return;
 }
+
+
 int main(int argc, char *argv[])
 {
-    // printf("scheduler's id is %d\n", getpid());
     initClk();
     signal(SIGCHLD, handler);
-    // process *runningProcess=malloc(sizeof(process));
     int rec_val;
     // int algorithmNumber = atoi(argv[1]);
     int algorithmNumber = 1;
-    process *receivedProcess = malloc(sizeof(process));
+    //process *receivedProcess = malloc(sizeof(process));
     struct PriorityQueue *queue = createPQ(atoi(argv[1])); // create p queue takes capacity??
     key_t ProcessQueue = getProcessQueue();
+    int n=0;
     process *runningProcess = NULL; // pointer that points at the running process
-    while (true)
+    while (n<5)
     {
-
+        process *receivedProcess= malloc(sizeof(process));
+        //if()
         bool received = receiveProcess(ProcessQueue, receivedProcess);
         //printf("recieved at clock =  %d\n",getClk());
         if (received == true)
         {
+            n++;
             CreateProcessChild(receivedProcess);
-            receivedProcess->priority = getPriority(algorithmNumber, receivedProcess);
+            //receivedProcess->priority = getPriority(algorithmNumber, receivedProcess);
             enqueuePQ(queue, receivedProcess);
-            // printf("%d  %d  %d  %d\n", receivedProcess->id, receivedProcess->arrivaltime, receivedProcess->remainingtime, receivedProcess->priority);
-            // uncomment the next lines to check priority queue
-            // if (receivedProcess->id==5) // priority queue is replacing data with new input !!
-            // {
-            //     while(peekPQ(queue))
-            //     {
-            //         process *p=malloc(sizeof(process));
-            //         p=dequeuePQ(queue);
-            //         printf("%d  %d  %d  %d\n", p->id, p->arrivaltime, p->remainingtime, p->priority);
-            //     }
-            // }
+            printf("recievied process with id = %d at time = %d\n", receivedProcess->id, getClk());
+
+
         }
+
+            if (n==5) // priority queue is replacing data with new input !!
+            {
+                while(peekPQ(queue))
+                {
+                    process *p = peekPQ(queue);
+                    dequeuePQ(queue);
+                    printf("%d  %d  %d  %d\n", p->id, p->arrivaltime, p->remainingtime, p->priority);
+                }
+            }
+
+
         if (isBusy == false)
         {
             if (algorithmNumber == 1)
             {
-                HighestPriorityFirst(queue, runningProcess);
+                //HighestPriorityFirst(queue);
             }
         }
     }
