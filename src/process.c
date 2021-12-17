@@ -8,5 +8,5 @@ int main(int argc, char *argv[])
     int time = atoi(argv[1]);
     while (clock() < time * CLOCKS_PER_SEC);
 
-    return kill(getppid(), SIGCONT);
+    return 0;
 }

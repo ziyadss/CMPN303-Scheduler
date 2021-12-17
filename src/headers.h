@@ -25,6 +25,8 @@
     #include <stdbool.h> instead of the enum below?
  */
 
+const char *processFormatString = "%d\t%d\t%d\t%d\n";
+
 // Boolean datatype
 typedef enum
 {

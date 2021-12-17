@@ -5,181 +5,138 @@
 
 void handler();
 
-struct PCB
-{
-    char *status;
-    process data;
-    int excutiontime;
-    int waitingtime;
-};
 bool isBusy = false;
+process *runningProcess = NULL;
+key_t messageQueue;
 
-void filehandler(char *status, process *p)
+void createChildProcess(process *recievedProcess)
 {
-    char *s;
-    // sprintf(s,"At time %d process %d %s arr %d total %d remain %d wait %d\n",getClk(),p->id,status,p->arrivaltime,10,p->remainingtime,(int)1);
-    // printf("%s",s);
-    return;
-}
-
-void CreateProcessChild(process *recievedProcess)
-{
-    int pidProcess, stat_loc_Process;
-
-    pidProcess = fork();
-    if (pidProcess == 0)
-    { //2nd child: forked process
-        char arrremainingtime[] = {[0 ... 10] = '\0'};
-        sprintf(arrremainingtime, "%d", recievedProcess->remainingtime);
-        execl("bin/process.out", "process.out", arrremainingtime, NULL);
+    int pid = fork();
+    if (pid == 0)
+    {
+        //2nd child: forked process
+        char time[] = {[0 ... 10] = '\0'};
+        sprintf(time, "%d", recievedProcess->remainingtime);
+        execl("bin/process.out", "process.out", time, NULL);
     }
     else
-    { // parent code: scheduler
-        recievedProcess->processID = pidProcess;
-        kill(pidProcess, SIGTSTP);
+    {
+        // parent code: scheduler
+        recievedProcess->processID = pid;
+        kill(pid, SIGTSTP);
     }
     return;
 }
 
-key_t getProcessQueue()
+key_t getMessageQueue()
 {
-    key_t ProcessQueue;
-    ProcessQueue = msgget(MSGPROCSCED, 0666 | IPC_CREAT); // or msgget(12613, IPC_CREAT | 0644)
+    key_t messageQueue = msgget(MSGPROCSCED, 0666 | IPC_CREAT); // or msgget(12613, IPC_CREAT | 0644)
 
-    if (ProcessQueue == -1)
+    if (messageQueue == -1)
     {
         perror("Error finding message queue from scheduler");
         exit(-1);
     }
-    return ProcessQueue;
+
+    return messageQueue;
 }
 
-process *receiveProcess(key_t ProcessQueue, process receivedProcess)
+process *receiveProcess()
 {
-    int rec_val;
-    process *receivedProcessActual = malloc(sizeof(process));
-    rec_val = msgrcv(ProcessQueue, &receivedProcess, sizeof(receivedProcess), 0, !IPC_NOWAIT);
-    receivedProcessActual->arrivaltime = receivedProcess.arrivaltime;
-    receivedProcessActual->id = receivedProcess.id;
-    receivedProcessActual->remainingtime = receivedProcess.remainingtime;
-    receivedProcessActual->priority = receivedProcess.priority;
-    //printf("sent size is %ld",sizeof(receivedProcess));
+    process pp; // = malloc(sizeof(process));
+    // int recVal = msgrcv(messageQueue, p, sizeof(*p), 0, IPC_NOWAIT);
+    int recVal = msgrcv(messageQueue, &pp, sizeof(pp), 0, IPC_NOWAIT);
 
-    if (rec_val == -1)
+    if (recVal == -1)
     {
-        // also check if message is empty
-        //printf("process not received\n");
+        // free(p);
         return NULL;
     }
-    //printf("process received\n");
-    //printf("ID %d  %d  %d  %d\n",receivedProcess.id,receivedProcess.arrivaltime,receivedProcess.remainingtime,receivedProcess.priority );
-    return receivedProcessActual;
+
+    process *p = malloc(sizeof(*p));
+    // p->arrivaltime = pp.arrivaltime;
+    // p->remainingtime = pp.remainingtime;
+    // p->priority = pp.priority;
+    // p->processID = pp.processID;
+    // p->id = pp.id;
+
+    printf("Process received\n");
+    // printf(processFormatString, p->id, p->arrivaltime, p->remainingtime, p->priority);
+    return p;
 }
-int getPriority(int algorithmNumber, process *receivedProcess)
-{
-    int chpf = 0, csrtn = 0, crr = 0;
-    switch (algorithmNumber)
-    {
-    case 1:
-        chpf = 1;
-        break;
-    case 2:
-        csrtn = 1;
-        break;
-    case 3:
-        crr = 1;
-        break;
-    }
-    int priority = chpf * receivedProcess->priority + csrtn * receivedProcess->remainingtime + crr * receivedProcess->arrivaltime;
-    return priority;
-}
+
 void HighestPriorityFirst(struct PriorityQueue *Processes)
 {
-    if (isBusy == false)
+
+    runningProcess = dequeuePQ(Processes);
+
+    if (runningProcess == NULL)
+        return;
+
+    isBusy = true;
+    kill(runningProcess->processID, SIGCONT);
+
+    printf("Process %d started at time = %d\n", runningProcess->id, getClk());
+
+    int status;
+    pid_t pid = wait(&status);
+    printf("pp1 %d\tpp2 %d\n", (int)pid, runningProcess->processID);
+
+    // while (runningProcess->processID != wait(&status));
+
+    isBusy = false;
+
+    printf("Process %d finished at time = %d\n", runningProcess->id, getClk());
+}
+
+void HPFScheduler(size_t capacity)
+{
+
+    PriorityQueue *queue = createPQ(capacity);
+
+    while (true)
     {
-        process *runningProcess = peekPQ(Processes);
-        //process *runningProcess  =malloc(sizeof(process));
-        dequeuePQ(Processes);
-        if (runningProcess)
+        process *p = receiveProcess();
+        while (p != NULL)
         {
-            isBusy = true;
-            kill(runningProcess->processID, SIGCONT);
-
-            printf("Process %d started at time = %d\n", runningProcess->id, getClk());
-
-            raise(SIGTSTP);
+            createChildProcess(p);
+            enqueuePQ(queue, p);
+            printf("Recievied process with id = %d, pid = %d at time = %d\n", p->id, p->processID, getClk());
+            p = receiveProcess();
         }
+
+        HighestPriorityFirst(queue);
     }
-    return;
 }
 
 int main(int argc, char *argv[])
 {
+    if (argc != 2)
+        // return fprintf(stderr, "Incorrect usage, to run use: ./bin/scheduler.out <algorithm number>\n");
+        return fprintf(stderr, "Incorrect usage, to run use: ./bin/scheduler.out <maximum capacity>\n");
+
     initClk();
-    signal(SIGCHLD, handler);
-    struct process processArr[5];
-    int algorithmNumber = 1;
+    // signal(SIGCHLD, childHandler);
 
-    struct PriorityQueue *queue = createPQ(atoi(argv[1])); // create p queue takes capacity??
-    key_t ProcessQueue = getProcessQueue();
-    int n = 0;
-    process *receivedProcess = malloc(sizeof(process));
-    process *runningProcess; // pointer that points at the running process
-    while (true)
-    {
-        do
-        {
-            receivedProcess = malloc(sizeof(process));
-            receivedProcess = receiveProcess(ProcessQueue, *receivedProcess);
-            if (receivedProcess)
-            {
+    messageQueue = getMessageQueue();
 
-                CreateProcessChild(receivedProcess);
-                enqueuePQ(queue, receivedProcess);
-                printf("recievied process with id = %d with pid = %d at time = %d\n", receivedProcess->id, receivedProcess->processID, getClk());
-                // filehandler("received",receivedProcess);
-            }
-        } while (receivedProcess != NULL);
+    printf("TIME: %d\n", getClk());
 
-        // switch cases/ algortithms calls are here
-        if (isBusy == false)
-        {
-            if (algorithmNumber == 1)
-            {
-                n++;
-                HighestPriorityFirst(queue);
-            }
-        }
-        else
-            raise(SIGTSTP);
-    }
+    HPFScheduler(atol(argv[1]));
 
-    // TODO implement the scheduler :)
-    // upon termination release the clock resources
-
-    //destroyClk(true);
-
-    // printf(" algorithm number recieved is %d", algorithmNumber );
-    // create empty priority queue
-    // enqueue process in priority queue
-
-    // struct CircularQueue *ReadyQueue= createQueue();
-    // set priority and set priority queue data with recieved data
-
-    //destroyClk(true);
+    destroyClk(true);
 }
-void handler()
-{
-    int temppid, status;
-    temppid = waitpid(-1, &status, WNOHANG);
-    // printf("child died\n");
-    if (WIFEXITED(status))
-    {
-        isBusy = false;
-        // printf("process ended\n");
-    }
-    return;
-}
+
+// void childHandler()
+// {
+//     int status;
+//     waitpid(runningProcess->processID, &status, !WNOHANG);
+
+//     if (WIFEXITED(status))
+//         isBusy = false;
+
+//     signal(SIGCHLD, childHandler);
+// }
 
 // if (n==5) // priority queue is replacing data with new input !!
 // {
