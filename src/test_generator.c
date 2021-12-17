@@ -1,37 +1,33 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
-#define null 0
-
-struct processData
-{
-    int arrivaltime;
-    int priority;
-    int runningtime;
-    int id;
-};
 
 int main(int argc, char *argv[])
 {
-    FILE *pFile;
-    pFile = fopen("processes.txt", "w");
-    int no;
-    struct processData pData;
-    printf("Please enter the number of processes you want to generate: ");
-    scanf("%d", &no);
-    srand(time(null));
-    // fprintf(pFile,"%d\n",no);
-    fprintf(pFile, "#id arrival runtime priority\n");
-    pData.arrivaltime = 1;
-    for (int i = 1; i <= no; i++)
+    if (argc != 2)
+        return fprintf(stderr, "Incorrect usage, to run use: ./bin/test_generator.out <count>\n");
+
+    FILE *outFile = fopen("processes.txt", "w");
+    if (outFile == NULL) // case couldn't read file
     {
-        // generate Data Randomly
-        //[min-max] = rand() % (max_number + 1 - minimum_number) + minimum_number
-        pData.id = i;
-        pData.arrivaltime += rand() % (11); // processes arrives in order
-        pData.runningtime = rand() % (30);
-        pData.priority = rand() % (11);
-        fprintf(pFile, "%d\t%d\t%d\t%d\n", pData.id, pData.arrivaltime, pData.runningtime, pData.priority);
+        perror("Error opening output file");
+        exit(-1);
     }
-    fclose(pFile);
+
+    int count = atoi(argv[1]);
+    srand(time(NULL));
+
+    fprintf(outFile, "#id arrival runtime priority\n");
+    int arrivaltime = 1;
+    for (int id = 1; id <= count; id++)
+    {
+        // [min-max] = rand() % (max_number + 1 - minimum_number) + minimum_number
+        // rand() % x generates from 0 to 0-1
+        arrivaltime += rand() % 11;
+        int remainingtime = rand() % 30;
+        int priority = rand() % 11;
+        fprintf(outFile, "%d\t%d\t%d\t%d\n", id, arrivaltime, remainingtime, priority);
+    }
+
+    return fclose(outFile);
 }
