@@ -14,6 +14,22 @@ typedef struct PriorityQueue
 } PriorityQueue;
 
 /**
+ * @brief 
+ * 
+ * @param queue 
+ * @param a 
+ * @param b 
+ * @return int 
+ */
+int processSwap(PriorityQueue* queue,size_t a, size_t b)
+{
+    process* tmp = queue->nodes[a];
+    queue->nodes[a] = queue->nodes[b];
+    queue->nodes[b] = tmp;
+    return a; 
+}
+
+/**
  * @brief
  *
  * @param queue
@@ -25,16 +41,14 @@ void minHeapify(PriorityQueue *queue, size_t i)
 
     size_t smallest = i;
     if (l < queue->size && queue->nodes[l]->priority < queue->nodes[i]->priority)
-        smallest = l;
+        smallest = processSwap(queue, i , l);
 
     if (r < queue->size && queue->nodes[r]->priority < queue->nodes[i]->priority)
         smallest = r;
 
     if (smallest != i)
     {
-        process *tmp = queue->nodes[i];
-        queue->nodes[i] = queue->nodes[smallest];
-        queue->nodes[smallest] = tmp;
+        processSwap(queue, i, smallest);
         minHeapify(queue, smallest);
     }
 };
@@ -56,10 +70,7 @@ int decreasePriority(PriorityQueue *queue, size_t i, u_int8_t priority)
 
     while (i > 0 && queue->nodes[parent(i)]->priority > queue->nodes[i]->priority)
     {
-        process *tmp = queue->nodes[i];
-        queue->nodes[i] = queue->nodes[parent(i)];
-        queue->nodes[parent(i)] = tmp;
-        i = parent(i);
+        i = processSwap(queue, i, parent(i));
     }
     return 0;
 }
@@ -79,6 +90,7 @@ PriorityQueue *createPQ(size_t capacity)
 
     return queue;
 }
+
 
 /**
  * @brief
@@ -122,8 +134,7 @@ process *dequeuePQ(PriorityQueue *queue)
     process *min = queue->nodes[0];
 
     queue->nodes[0] = queue->nodes[--queue->size];
-    minHeapify(queue, 0);
-    // free when
+    minHeapify(queue, 0);   
     return min;
 }
 
@@ -141,23 +152,30 @@ int freePQ(PriorityQueue *queue)
     return 1;
 }
 
-// int main()
-// {
-//     PriorityQueue *queue = createPQ(3);
+int main()
+{
+    PriorityQueue *queue = createPQ(5);
 
-//     process *x = createProcess(8, 3, 2 , 3);
-//     process *y = createProcess(0, 1, 6, 7);
-//     process *z = createProcess(4, 2, 10, 11);
+    process *z = createProcess(2, 4, 10, 1);
+    process *x = createProcess(2, 2, 5 , 2);
+    process *y = createProcess(8, 1, 8, 3);
+    process *b = createProcess(10, 6, 25, 4);
+    process *v = createProcess(12 ,5 , 25, 5);   
 
-//     enqueuePQ(queue, x);
-//     enqueuePQ(queue, y);
-//     enqueuePQ(queue, z);
+    enqueuePQ(queue, x);
+    enqueuePQ(queue, y);
+    enqueuePQ(queue, z);
+    enqueuePQ(queue, b);
+    enqueuePQ(queue, v);
 
-//     printf("%d\n", *(int *)dequeuePQ(queue));
-//     printf("%d\n", *(int *)dequeuePQ(queue));
-//     printf("%d\n", *(int *)dequeuePQ(queue));
 
-//     //3 2 1
+        while (peekPQ(queue))
+    {
+        process *d = dequeuePQ(queue);
+        printf("%d\t %d \n", d->id, d->priority );
+    }
 
-//     return 0;
-// }
+    //3 2 1
+
+    return 0;
+}
