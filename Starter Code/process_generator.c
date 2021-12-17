@@ -112,11 +112,12 @@ int main(int argc, char *argv[])
             {
                 int x = getClk();
                 process *pData2 = peekCQ(dataQueue);
+                process pData1=*pData2;
 
                 if (pData2->arrivaltime == x)
                 {
                     dequeueCQ(dataQueue);
-                    sendVal = msgsnd(msgUpQueueID, & *pData2, sizeof(*pData2), !IPC_NOWAIT);
+                    sendVal = msgsnd(msgUpQueueID, & pData1, sizeof(pData1), !IPC_NOWAIT);
                             if(sendVal==-1){
                                 perror("error sending messageUP");
                                 exit(-1);
