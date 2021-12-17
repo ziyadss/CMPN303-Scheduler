@@ -2,7 +2,6 @@
 
 #include "PriorityQueue.c"
 #include "CircularQueue.c"
-bool isBusy = false;
 
 void handler();
 
