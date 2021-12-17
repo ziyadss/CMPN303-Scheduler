@@ -11,7 +11,7 @@ int main(int argc, char *argv[])
     if (outFile == NULL) // case couldn't read file
     {
         perror("Error opening output file");
-        exit(-1);
+        return -1;
     }
 
     int count = atoi(argv[1]);

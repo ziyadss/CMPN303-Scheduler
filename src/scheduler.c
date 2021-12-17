@@ -1,9 +1,28 @@
 #include "headers.h"
+
 #include "PriorityQueue.c"
 #include "CircularQueue.c"
 bool isBusy = false;
 
 void handler();
+
+struct PCB
+{
+    char *status;
+    process data;
+    int excutiontime;
+    int waitingtime;
+};
+bool isBusy = false;
+
+void filehandler(char *status, process *p)
+{
+    char *s;
+    // sprintf(s,"At time %d process %d %s arr %d total %d remain %d wait %d\n",getClk(),p->id,status,p->arrivaltime,10,p->remainingtime,(int)1);
+    // printf("%s",s);
+    return;
+}
+
 void CreateProcessChild(process *recievedProcess)
 {
     int pidProcess, stat_loc_Process;
@@ -86,7 +105,10 @@ void HighestPriorityFirst(struct PriorityQueue *Processes)
         {
             isBusy = true;
             kill(runningProcess->processID, SIGCONT);
+
             printf("Process %d started at time = %d\n", runningProcess->id, getClk());
+
+            raise(SIGTSTP);
         }
     }
     return;
@@ -102,27 +124,35 @@ int main(int argc, char *argv[])
     struct PriorityQueue *queue = createPQ(atoi(argv[1])); // create p queue takes capacity??
     key_t ProcessQueue = getProcessQueue();
     int n = 0;
+    process *receivedProcess = malloc(sizeof(process));
     process *runningProcess; // pointer that points at the running process
     while (true)
     {
-        process *receivedProcess = malloc(sizeof(process));
-        receivedProcess = receiveProcess(ProcessQueue, *receivedProcess);
-        if (receivedProcess != NULL)
+        do
         {
-            n++;
-            CreateProcessChild(receivedProcess);
-            enqueuePQ(queue, receivedProcess);
-            //printf("recievied process with id = %d with pid = %d at time = %d\n", receivedProcess->id,receivedProcess->processID ,getClk());
-        }
+            receivedProcess = malloc(sizeof(process));
+            receivedProcess = receiveProcess(ProcessQueue, *receivedProcess);
+            if (receivedProcess)
+            {
+
+                CreateProcessChild(receivedProcess);
+                enqueuePQ(queue, receivedProcess);
+                printf("recievied process with id = %d with pid = %d at time = %d\n", receivedProcess->id, receivedProcess->processID, getClk());
+                // filehandler("received",receivedProcess);
+            }
+        } while (receivedProcess != NULL);
 
         // switch cases/ algortithms calls are here
         if (isBusy == false)
         {
             if (algorithmNumber == 1)
             {
+                n++;
                 HighestPriorityFirst(queue);
             }
         }
+        else
+            raise(SIGTSTP);
     }
 
     // TODO implement the scheduler :)
