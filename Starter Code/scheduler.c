@@ -16,7 +16,7 @@ void CreateProcessChild(process *recievedProcess)
     }
     else
     { // parent code: scheduler
-        //recievedProcess->processID = pidProcess;
+        recievedProcess->processID = pidProcess;
         kill(pidProcess, SIGTSTP);
     }
     return;
@@ -84,7 +84,7 @@ void HighestPriorityFirst(struct PriorityQueue *Processes)
         if (runningProcess)
         {
             isBusy = true;
-            //kill(runningProcess->processID, SIGCONT);
+            kill(runningProcess->processID, SIGCONT);
             printf("process %d started at time = %d\n", runningProcess->id,getClk());
         }
     }
@@ -97,6 +97,7 @@ int main(int argc, char *argv[])
     initClk();
     signal(SIGCHLD, handler);
     struct process processArr[5];
+    int algorithmNumber=1;
     
     struct PriorityQueue *queue = createPQ(atoi(argv[1])); // create p queue takes capacity??
     key_t ProcessQueue = getProcessQueue();
@@ -111,28 +112,17 @@ int main(int argc, char *argv[])
             n++;
             CreateProcessChild(receivedProcess);
             enqueuePQ(queue, receivedProcess);
-            printf("recievied process with id = %d at time = %d\n", receivedProcess->id, getClk());
-
-
+            //printf("recievied process with id = %d with pid = %d at time = %d\n", receivedProcess->id,receivedProcess->processID ,getClk());
         }
 
-            if (n==5) // priority queue is replacing data with new input !!
-            {
-                while(peekPQ(queue))
-                {
-                    process *p = peekPQ(queue);
-                    dequeuePQ(queue);
-                    printf("%d  %d  %d  %d\n", p->id, p->arrivaltime, p->remainingtime, p->priority);
-                }
-            }
 
-
+        // switch cases/ algortithms calls are here
         if (isBusy == false)
         {
-            // if (algorithmNumber == 1)
-            // {
-            //     //HighestPriorityFirst(queue);
-            // }
+            if (algorithmNumber == 1)
+            {
+                HighestPriorityFirst(queue);
+            }
         }
     }
 
@@ -162,3 +152,14 @@ void handler(int signum)
     }
     return;
 }
+
+
+            // if (n==5) // priority queue is replacing data with new input !!
+            // {
+            //     while(peekPQ(queue))
+            //     {
+            //         process *p = peekPQ(queue);
+            //         dequeuePQ(queue);
+            //         printf("%d  %d  %d  %d\n", p->id, p->arrivaltime, p->remainingtime, p->priority);
+            //     }
+            // }
