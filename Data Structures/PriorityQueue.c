@@ -152,30 +152,30 @@ int freePQ(PriorityQueue *queue)
     return 1;
 }
 
-int main()
-{
-    PriorityQueue *queue = createPQ(5);
+// int main()
+// {
+//     PriorityQueue *queue = createPQ(5);
 
-    process *z = createProcess(2, 4, 10, 1);
-    process *x = createProcess(2, 2, 5 , 2);
-    process *y = createProcess(8, 1, 8, 3);
-    process *b = createProcess(10, 6, 25, 4);
-    process *v = createProcess(12 ,5 , 25, 5);   
+//     process *z = createProcess(2, 4, 10, 1);
+//     process *x = createProcess(2, 2, 5 , 2);
+//     process *y = createProcess(8, 1, 8, 3);
+//     process *b = createProcess(10, 6, 25, 4);
+//     process *v = createProcess(12 ,5 , 25, 5);   
 
-    enqueuePQ(queue, x);
-    enqueuePQ(queue, y);
-    enqueuePQ(queue, z);
-    enqueuePQ(queue, b);
-    enqueuePQ(queue, v);
+//     enqueuePQ(queue, x);
+//     enqueuePQ(queue, y);
+//     enqueuePQ(queue, z);
+//     enqueuePQ(queue, b);
+//     enqueuePQ(queue, v);
 
 
-        while (peekPQ(queue))
-    {
-        process *d = dequeuePQ(queue);
-        printf("%d\t %d \n", d->id, d->priority );
-    }
+//         while (peekPQ(queue))
+//     {
+//         process *d = dequeuePQ(queue);
+//         printf("%d\t %d \n", d->id, d->priority );
+//     }
 
-    //3 2 1
+//     //3 2 1
 
-    return 0;
-}
+//     return 0;
+// }
