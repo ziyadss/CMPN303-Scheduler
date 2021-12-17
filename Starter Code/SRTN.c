@@ -4,8 +4,8 @@
 // to do:
 
 bool insertProcess(PriorityQueue *q, process *b)
-{   
-    return enqueuePQ(q, b); 
+{
+    return enqueuePQ(q, b);
 }
 
 bool checkRunning(PriorityQueue *q)
@@ -15,8 +15,3 @@ bool checkRunning(PriorityQueue *q)
     process *current;
     return (timeCompare(current, peekPQ(q)));
 }
-
- 
-
-
-
