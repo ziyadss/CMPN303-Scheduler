@@ -21,12 +21,12 @@ typedef struct PriorityQueue
  * @param b 
  * @return int 
  */
-int processSwap(PriorityQueue* queue,size_t a, size_t b)
+int processSwap(PriorityQueue *queue, size_t a, size_t b)
 {
-    process* tmp = queue->nodes[a];
+    process *tmp = queue->nodes[a];
     queue->nodes[a] = queue->nodes[b];
     queue->nodes[b] = tmp;
-    return a; 
+    return a;
 }
 
 /**
@@ -40,10 +40,10 @@ void minHeapify(PriorityQueue *queue, size_t i)
     size_t l = left(i), r = right(i);
 
     size_t smallest = i;
-    if (l < queue->size && queue->nodes[l]->priority < queue->nodes[i]->priority)
-        smallest = processSwap(queue, i , l);
+    if (l < queue->size && queue->nodes[l]->priority < queue->nodes[smallest]->priority)
+        smallest = l;
 
-    if (r < queue->size && queue->nodes[r]->priority < queue->nodes[i]->priority)
+    if (r < queue->size && queue->nodes[r]->priority < queue->nodes[smallest]->priority)
         smallest = r;
 
     if (smallest != i)
@@ -91,7 +91,6 @@ PriorityQueue *createPQ(size_t capacity)
     return queue;
 }
 
-
 /**
  * @brief
  *
@@ -134,7 +133,7 @@ process *dequeuePQ(PriorityQueue *queue)
     process *min = queue->nodes[0];
 
     queue->nodes[0] = queue->nodes[--queue->size];
-    minHeapify(queue, 0);   
+    minHeapify(queue, 0);
     return min;
 }
 
@@ -157,10 +156,10 @@ int freePQ(PriorityQueue *queue)
 //     PriorityQueue *queue = createPQ(5);
 
 //     process *z = createProcess(2, 4, 10, 1);
-//     process *x = createProcess(2, 2, 5 , 2);
+//     process *x = createProcess(2, 2, 5, 2);
 //     process *y = createProcess(8, 1, 8, 3);
 //     process *b = createProcess(10, 6, 25, 4);
-//     process *v = createProcess(12 ,5 , 25, 5);   
+//     process *v = createProcess(12, 5, 25, 5);
 
 //     enqueuePQ(queue, x);
 //     enqueuePQ(queue, y);
@@ -168,14 +167,19 @@ int freePQ(PriorityQueue *queue)
 //     enqueuePQ(queue, b);
 //     enqueuePQ(queue, v);
 
-
-//         while (peekPQ(queue))
+//     while (peekPQ(queue))
 //     {
 //         process *d = dequeuePQ(queue);
-//         printf("%d\t %d \n", d->id, d->priority );
+//         printf("%d\t %d \n", d->id, d->priority);
 //     }
 
-//     //3 2 1
+//     /* 
+//         3        1 
+//         2        2 
+//         1        4 
+//         5        5 
+//         4        6 
+//     */
 
 //     return 0;
 // }
