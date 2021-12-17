@@ -2,7 +2,6 @@
 #include "../Data Structures/PriorityQueue.c"
 #include "../Data Structures/CircularQueue.c"
 
-
 void clearResources(int);
 
 int msgUpQueueID;
@@ -84,11 +83,11 @@ int main(int argc, char *argv[])
     else
     {
         int pidSched, stat_loc_Sched;
-        char * arr=convertIntegerToChar(numberOfProcesses);
+        char *arr = convertIntegerToChar(numberOfProcesses);
         pidSched = fork();
         if (pidSched == 0)
         { //2nd child: scheduler creation
-            char *argsScheduler[] = {"./scheduler.out", arr,NULL};
+            char *argsScheduler[] = {"./scheduler.out", arr, NULL};
             execv(argsScheduler[0], argsScheduler);
         }
 
@@ -112,16 +111,17 @@ int main(int argc, char *argv[])
             {
                 int x = getClk();
                 process *pData2 = peekCQ(dataQueue);
-                process pData1=*pData2;
+                process pData1 = *pData2;
 
                 if (pData2->arrivaltime == x)
                 {
                     dequeueCQ(dataQueue);
-                    sendVal = msgsnd(msgUpQueueID, & pData1, sizeof(pData1), !IPC_NOWAIT);
-                            if(sendVal==-1){
-                                perror("error sending messageUP");
-                                exit(-1);
-                            }
+                    sendVal = msgsnd(msgUpQueueID, &pData1, sizeof(pData1), !IPC_NOWAIT);
+                    if (sendVal == -1)
+                    {
+                        perror("error sending messageUP");
+                        exit(-1);
+                    }
                     pData2 = peekCQ(dataQueue);
                     procNumber++;
                     // printf("%d at %d\n",procNumber,x);
@@ -161,6 +161,6 @@ int main(int argc, char *argv[])
 
 void clearResources(int signum)
 {
-    msgctl(msgUpQueueID,IPC_RMID,NULL);  
+    msgctl(msgUpQueueID, IPC_RMID, NULL);
     exit(-1);
 }

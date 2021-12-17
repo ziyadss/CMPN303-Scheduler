@@ -173,12 +173,12 @@ int freePQ(PriorityQueue *queue)
 //         printf("%d\t %d \n", d->id, d->priority);
 //     }
 
-//     /* 
-//         3        1 
-//         2        2 
-//         1        4 
-//         5        5 
-//         4        6 
+//     /*
+//         3        1
+//         2        2
+//         1        4
+//         5        5
+//         4        6
 //     */
 
 //     return 0;

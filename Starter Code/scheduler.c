@@ -35,15 +35,15 @@ key_t getProcessQueue()
     return ProcessQueue;
 }
 
-process* receiveProcess(key_t ProcessQueue, process receivedProcess)
+process *receiveProcess(key_t ProcessQueue, process receivedProcess)
 {
     int rec_val;
-    process *receivedProcessActual =malloc(sizeof(process));
+    process *receivedProcessActual = malloc(sizeof(process));
     rec_val = msgrcv(ProcessQueue, &receivedProcess, sizeof(receivedProcess), 0, !IPC_NOWAIT);
-    receivedProcessActual->arrivaltime=receivedProcess.arrivaltime;
-    receivedProcessActual->id=receivedProcess.id;
-    receivedProcessActual->remainingtime=receivedProcess.remainingtime;
-    receivedProcessActual->priority=receivedProcess.priority;
+    receivedProcessActual->arrivaltime = receivedProcess.arrivaltime;
+    receivedProcessActual->id = receivedProcess.id;
+    receivedProcessActual->remainingtime = receivedProcess.remainingtime;
+    receivedProcessActual->priority = receivedProcess.priority;
     //printf("sent size is %ld",sizeof(receivedProcess));
 
     if (rec_val == -1)
@@ -85,27 +85,26 @@ void HighestPriorityFirst(struct PriorityQueue *Processes)
         {
             isBusy = true;
             kill(runningProcess->processID, SIGCONT);
-            printf("process %d started at time = %d\n", runningProcess->id,getClk());
+            printf("process %d started at time = %d\n", runningProcess->id, getClk());
         }
     }
     return;
 }
-
 
 int main(int argc, char *argv[])
 {
     initClk();
     signal(SIGCHLD, handler);
     struct process processArr[5];
-    int algorithmNumber=1;
-    
+    int algorithmNumber = 1;
+
     struct PriorityQueue *queue = createPQ(atoi(argv[1])); // create p queue takes capacity??
     key_t ProcessQueue = getProcessQueue();
-    int n=0;
+    int n = 0;
     process *runningProcess; // pointer that points at the running process
     while (true)
     {
-        process *receivedProcess =malloc(sizeof(process));
+        process *receivedProcess = malloc(sizeof(process));
         receivedProcess = receiveProcess(ProcessQueue, *receivedProcess);
         if (receivedProcess != NULL)
         {
@@ -114,7 +113,6 @@ int main(int argc, char *argv[])
             enqueuePQ(queue, receivedProcess);
             //printf("recievied process with id = %d with pid = %d at time = %d\n", receivedProcess->id,receivedProcess->processID ,getClk());
         }
-
 
         // switch cases/ algortithms calls are here
         if (isBusy == false)
@@ -143,7 +141,7 @@ int main(int argc, char *argv[])
 void handler(int signum)
 {
     int temppid, status;
-    temppid = waitpid(-1,&status,WNOHANG);
+    temppid = waitpid(-1, &status, WNOHANG);
     // printf("child died\n");
     if (WIFEXITED(status))
     {
@@ -153,13 +151,12 @@ void handler(int signum)
     return;
 }
 
-
-            // if (n==5) // priority queue is replacing data with new input !!
-            // {
-            //     while(peekPQ(queue))
-            //     {
-            //         process *p = peekPQ(queue);
-            //         dequeuePQ(queue);
-            //         printf("%d  %d  %d  %d\n", p->id, p->arrivaltime, p->remainingtime, p->priority);
-            //     }
-            // }
+// if (n==5) // priority queue is replacing data with new input !!
+// {
+//     while(peekPQ(queue))
+//     {
+//         process *p = peekPQ(queue);
+//         dequeuePQ(queue);
+//         printf("%d  %d  %d  %d\n", p->id, p->arrivaltime, p->remainingtime, p->priority);
+//     }
+// }
