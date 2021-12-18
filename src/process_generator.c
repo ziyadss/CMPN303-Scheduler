@@ -36,7 +36,7 @@ int main(int argc, char *argv[])
             process *p = malloc(sizeof(*p));
             sscanf(line, processFormatString, &p->id, &p->arrivaltime, &p->remainingtime, &p->priority);
 
-            printf(processFormatString, p->id, p->arrivaltime, p->remainingtime, p->priority);
+            // printf(processFormatString, p->id, p->arrivaltime, p->remainingtime, p->priority);
             enqueueCQ(processQueue, p);
         }
 
@@ -66,7 +66,6 @@ int main(int argc, char *argv[])
     while (isEmptyCQ(processQueue) == false)
     {
         process *p_pointer = peekCQ(processQueue);
-
         process p = *p_pointer;
 
         if (getClk() >= p.arrivaltime)
@@ -80,14 +79,8 @@ int main(int argc, char *argv[])
                 perror("Error sending message to scheduler");
                 exit(-1);
             }
-            else
-            {
-                printf("Process %d sent to scheduler\n", p.id);
-                kill(Childschd, SIGCONT);
-            }
-            //i need to send a signal to the scheduler to
-            //alert SRTN That there is a new process
-            //how do i do that
+
+            kill(Childschd, SIGCONT);
         }
     }
 
