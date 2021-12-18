@@ -33,7 +33,7 @@ CircularQueue *createCQ()
  */
 void enqueueCQ(struct CircularQueue *queue, process *p)
 {
-    struct CircularNode *node = malloc(sizeof(*node));
+    struct CircularNode *node = malloc(sizeof(CircularNode));
     node->p = p;
 
     if (queue->first)
@@ -80,8 +80,9 @@ process *dequeueCQ(struct CircularQueue *queue)
         queue->first = NULL;
     else
     {
+        node->prev->next = node->next;
+        node->next->prev = node->prev;
         queue->first = node->next;
-        queue->first->prev = node->prev;
     }
 
     free(node);
@@ -101,21 +102,37 @@ void freeCQ(struct CircularQueue *queue)
     free(queue);
 }
 
+bool isEmptyCQ(CircularQueue *queue)
+{
+    return queue->first == NULL;
+}
+
 // int main()
 // {
-//     struct CircularQueue *queue = createCQ();
+//     CircularQueue *queue = createCQ();
 
-//     int x = 1, y = 2, z = 3;
+//     process a = {1, 1, 1, 1, 1};
+//     process b = {2, 2, 2, 2, 2};
+//     process c = {3, 3, 3, 3, 3};
+//     process d = {4, 4, 4, 4, 4};
+//     process e = {5, 5, 5, 5, 5};
 
-//     enqueueCQ(queue, &x);
-//     enqueueCQ(queue, &y);
-//     enqueueCQ(queue, &z);
+//     enqueueCQ(queue, &e);
+//     enqueueCQ(queue, &d);
+//     enqueueCQ(queue, &c);
+//     enqueueCQ(queue, &b);
+//     // enqueueCQ(queue, &a);
 
-//     printf("%d\n", *(int *)dequeueCQ(queue));
-//     printf("%d\n", *(int *)dequeueCQ(queue));
-//     printf("%d\n", *(int *)dequeueCQ(queue));
+//     process *p = dequeueCQ(queue);
+//     enqueueCQ(queue, &a);
+//     enqueueCQ(queue, p);
 
-//     //1 2 3
+//     for (int i = 0; i < 10; i++)
+//     {
+//         process *x = dequeueCQ(queue);
+//         printf("%d\n", x->id);
+//         enqueueCQ(queue, x);
+//     }
 
 //     return 0;
 // }

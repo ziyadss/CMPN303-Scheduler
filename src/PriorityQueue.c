@@ -1,6 +1,6 @@
 #pragma once
 
-#include "headers.h"
+#include "../src/headers.h"
 
 size_t parent(const size_t i) { return (i - 1) / 2; }
 size_t left(const size_t i) { return 2 * i + 1; }
@@ -11,7 +11,18 @@ typedef struct PriorityQueue
     size_t size;
     size_t capacity;
     process **nodes;
+    bool (*compare)(process *, process *);
 } PriorityQueue;
+
+bool priorityCompare(process *a, process *b)
+{
+    return a->priority < b->priority;
+}
+
+bool timeCompare(process *a, process *b)
+{
+    return a->remainingtime < b->remainingtime;
+}
 
 /**
  * @brief 
@@ -40,10 +51,10 @@ void minHeapify(PriorityQueue *queue, size_t i)
     size_t l = left(i), r = right(i);
 
     size_t smallest = i;
-    if (l < queue->size && queue->nodes[l]->priority < queue->nodes[smallest]->priority)
+    if (l < queue->size && queue->compare(queue->nodes[l], queue->nodes[smallest]))
         smallest = l;
 
-    if (r < queue->size && queue->nodes[r]->priority < queue->nodes[smallest]->priority)
+    if (r < queue->size && queue->compare(queue->nodes[r], queue->nodes[smallest]))
         smallest = r;
 
     if (smallest != i)
@@ -68,10 +79,9 @@ int decreasePriority(PriorityQueue *queue, size_t i, u_int8_t priority)
 
     queue->nodes[i]->priority = priority;
 
-    while (i > 0 && queue->nodes[parent(i)]->priority > queue->nodes[i]->priority)
-    {
-        i = processSwap(queue, i, parent(i));
-    }
+    while (i > 0 && queue->compare(queue->nodes[i], queue->nodes[parent(i)]))
+        i = processSwap(queue, parent(i), i);
+
     return 0;
 }
 
@@ -81,12 +91,14 @@ int decreasePriority(PriorityQueue *queue, size_t i, u_int8_t priority)
  * @param capacity
  * @return struct PriorityQueue*
  */
-PriorityQueue *createPQ(size_t capacity)
+PriorityQueue *createPQ(size_t capacity, bool (*predicate)(process *, process *))
 {
     PriorityQueue *queue = malloc(sizeof(*queue));
     queue->nodes = malloc(sizeof(*(queue->nodes)) * capacity);
+    // queue->nodes = calloc(capacity, sizeof(*(queue->nodes)));
     queue->size = 0;
     queue->capacity = capacity;
+    queue->compare = predicate;
 
     return queue;
 }
@@ -151,35 +163,32 @@ int freePQ(PriorityQueue *queue)
     return 1;
 }
 
+bool isEmptyPQ(PriorityQueue *queue)
+{
+    return queue->size == 0;
+}
+
 // int main()
 // {
-//     PriorityQueue *queue = createPQ(5);
+//     PriorityQueue *queue = createPQ(5, timeCompare);
 
-//     process *z = createProcess(2, 4, 10, 1);
-//     process *x = createProcess(2, 2, 5, 2);
-//     process *y = createProcess(8, 1, 8, 3);
-//     process *b = createProcess(10, 6, 25, 4);
-//     process *v = createProcess(12, 5, 25, 5);
+//     process a = {1, 1, 1, 1, 1};
+//     process b = {2, 2, 2, 2, 2};
+//     process c = {3, 3, 3, 3, 3};
+//     process d = {4, 4, 4, 4, 4};
+//     process e = {5, 5, 5, 5, 5};
 
-//     enqueuePQ(queue, x);
-//     enqueuePQ(queue, y);
-//     enqueuePQ(queue, z);
-//     enqueuePQ(queue, b);
-//     enqueuePQ(queue, v);
+//     enqueuePQ(queue, &e);
+//     enqueuePQ(queue, &d);
+//     enqueuePQ(queue, &c);
+//     enqueuePQ(queue, &b);
+//     enqueuePQ(queue, &a);
 
 //     while (peekPQ(queue))
 //     {
-//         process *d = dequeuePQ(queue);
-//         printf("%d\t %d \n", d->id, d->priority);
+//         process *x = dequeuePQ(queue);
+//         printf("%d\t %d \n", x->id, x->priority);
 //     }
-
-//     /*
-//         3        1
-//         2        2
-//         1        4
-//         5        5
-//         4        6
-//     */
 
 //     return 0;
 // }

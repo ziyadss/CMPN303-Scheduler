@@ -1,6 +1,7 @@
 # Added by Ziyad
 .vscode
 bin
+playground
 
 # Prerequisites
 *.d
