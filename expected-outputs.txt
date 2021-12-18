@@ -3,3 +3,26 @@
 2	5	4	8
 3	7	3	4
 4	17	20	9
+
+
+HPF
+
+process 1 waited  0, starts at  2, runs for 10, finishes at 12, TA = 12- 2 = 10, WTA = 10/10 = 1
+process 3 waited  5, starts at 12, runs for  3, finishes at 15, TA = 15- 7 =  8, WTA =  8/ 3 = 2.6667
+process 2 waited 10, starts at 15, runs for  4, finishes at 19, TA = 19- 5 = 14, WTA = 14/ 4 = 3.5
+process 4 waited  2, starts at 19, runs for 20, finishes at 39, TA = 39-17 = 22, WTA = 22/20 = 1.1
+
+wait sum = 0+5+10+2 = 17
+WTA sum = 1+2.6667+3.5+1.1 = 8.2667
+WTAsq sum = 1*1 + 2.6667*2.6667 + 3.5*3.5 + 1.1*1.1 = 21.57129
+
+avg wta = 8.2667/4 = 2.066675
+avg waiting = 17/4 = 4.25
+std dev = sqrt(21.57129/4 - 2.066675*2.066675) = 1.05909
+
+CPU utilization = 92.500000%
+Avg WTA = 2.066667
+Avg Waiting = 4.250000
+Std WTA = 1.059088
+
+Correct.
