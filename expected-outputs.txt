@@ -4,6 +4,18 @@
 3	7	3	4
 4	17	20	9
 
+SRTN
+
+process 1 waited  0, starts at  2, runs for  3, stops at 5
+process 2 waited  0, starts at  5, runs for  4, finishes at 9,  TA =  9- 5 =  4, WTA =  4/ 4 = 1
+process 3 waited  2, starts at  9, runs for  3, finishes at 12, TA = 12- 7 =  5, WTA =  5/ 3 = 1.667
+process 1 waited  7, starts at 12, runs for  7, finishes at 19, TA = 19- 2 = 17, WTA = 17/10 = 1.7
+process 4 waited  2, starts at 19, runs for 20, finished at 39, TA = 39-17 = 22, WTA = 22/20 = 1.1
+
+
+
+
+
 
 HPF
 
