@@ -7,11 +7,12 @@ size_t processCount;
 int timestep = 0;
 
 process *runningProcess = NULL;
-int previousTimeStep;
 key_t messageQueue;
 Process_Table *processTable;
 bool SRTNFlag = false;
 FILE *outFile;
+
+process buffer;
 
 void addSums(double TA, int burstTime, int waitTime)
 {
@@ -22,22 +23,22 @@ void addSums(double TA, int burstTime, int waitTime)
     burst_sum += burstTime;
 }
 
-void createChildProcess(process *recievedProcess)
+void createChildProcess(process *receivedProcess)
 {
     int pid = fork();
     if (pid == 0)
     {
         // 2nd child: forked process
         char time[] = {[0 ... 10] = '\0'};
-        sprintf(time, "%d", recievedProcess->remainingtime);
+        sprintf(time, "%d", receivedProcess->remainingtime);
         execl("bin/process.out", "process.out", time, NULL);
     }
     else
     {
         // parent code: scheduler
         kill(pid, SIGTSTP);
-        recievedProcess->processID = pid;
-        PT_insert(processTable, recievedProcess);
+        receivedProcess->processID = pid;
+        PT_insert(processTable, receivedProcess);
     }
 }
 
@@ -102,7 +103,7 @@ void HPF(PriorityQueue *processes)
     double TA = finishTime - block->arrival_time;
     addSums(TA, block->burst_time, block->wait_time);
 
-    fprintf(outFile, "At time %d process %d finished arr %d total %d remain %d wait %d TA %d WTA %2f\n",
+    fprintf(outFile, "At time %d process %d finished arr %d total %d remain %d wait %d TA %d WTA %.2f\n",
             finishTime,
             block->uid,
             block->arrival_time,
@@ -128,15 +129,17 @@ void HPFScheduler()
 
         HPF(queue);
 
-        process sp;
-        while (msgrcv(messageQueue, &sp, sizeof(sp), 0, IPC_NOWAIT) != -1)
+        while (true)
         {
+            if (msgrcv(messageQueue, &buffer, sizeof(buffer), 0, IPC_NOWAIT) == -1)
+                break;
+
             process *p = malloc(sizeof(*p));
-            *p = sp;
+            *p = buffer;
 
             createChildProcess(p);
             enqueuePQ(queue, p);
-            printf("Recievied process with id = %d, pid = %d at time = %d\n", p->id, p->processID, getClk());
+            printf("Received process with id = %d, pid = %d at time = %d\n", p->id, p->processID, getClk());
         }
     }
 }
@@ -182,7 +185,7 @@ process *RR(CircularQueue *processes)
         double TA = finishTime - block->arrival_time;
         addSums(TA, block->burst_time, block->wait_time);
 
-        fprintf(outFile, "At time %d process %d finished arr %d total %d remain %d wait %d TA %d WTA %2f\n",
+        fprintf(outFile, "At time %d process %d finished arr %d total %d remain %d wait %d TA %d WTA %.2f\n",
                 finishTime,
                 block->uid,
                 block->arrival_time,
@@ -223,15 +226,17 @@ void RRScheduler()
 
         process *last_run = RR(queue);
 
-        process sp;
-        while (msgrcv(messageQueue, &sp, sizeof(sp), 0, IPC_NOWAIT) != -1)
+        while (true)
         {
+            if (msgrcv(messageQueue, &buffer, sizeof(buffer), 0, IPC_NOWAIT) == -1)
+                break;
+
             process *p = malloc(sizeof(*p));
-            *p = sp;
+            *p = buffer;
 
             createChildProcess(p);
             enqueueCQ(queue, p);
-            printf("Recievied process with id = %d, pid = %d at time = %d\n", p->id, p->processID, getClk());
+            printf("Received process with id = %d, pid = %d at time = %d\n", p->id, p->processID, getClk());
         }
 
         if (last_run != NULL)
@@ -239,87 +244,137 @@ void RRScheduler()
     }
 }
 
-void SRTNHandler(int SIGNUM)
+void SRTNHandler()
 {
     SRTNFlag = true;
-    signal(SIGNUM, SRTNHandler);
+    signal(SIGCONT, SRTNHandler);
 }
 
 void SRTN(PriorityQueue *processes)
 {
     runningProcess = dequeuePQ(processes);
+
     if (runningProcess == NULL)
         return;
 
-    printf("started process with id %d and time %d \n", runningProcess->id, getClk());
+    Pcb *block = PT_find(processTable, runningProcess);
+    block->state = 1;
+
+    char *action = (block->remaining_time == block->total_time) ? "At time %d process %d started arr %d total %d remain %d wait %d\n" : "At time %d process %d resumed arr %d total %d remain %d wait %d\n";
+
+    int startTime = getClk();
+
+    fprintf(outFile, action, startTime,
+            block->uid,
+            block->arrival_time,
+            block->total_time,
+            block->remaining_time,
+            block->wait_time);
+
     kill(runningProcess->processID, SIGCONT);
 
-    if (previousTimeStep != getClk())
+    while (true)
     {
-        previousTimeStep = getClk();
-        // updateWaitTimes(previousTimeStep);
-    }
+        // printf("sleep\n");
+        runningProcess->remainingtime = sleep(runningProcess->remainingtime);
+        // printf("wake up\n");
+        int finishTime = getClk();
+        block->last_run_time = finishTime;
 
-    runningProcess->remainingtime = sleep(runningProcess->remainingtime);
-
-    if (SRTNFlag)
-    {
-        process sp;
-        if (msgrcv(messageQueue, &sp, sizeof(sp), 0, IPC_NOWAIT) != -1)
+        while (SRTNFlag)
         {
-            process *p = (process *)malloc(sizeof(process));
-            *p = sp;
+            if (msgrcv(messageQueue, &buffer, sizeof(buffer), 0, IPC_NOWAIT) == -1)
+                break;
+
+            process *p = malloc(sizeof(*p));
+            *p = buffer;
+
             createChildProcess(p);
             enqueuePQ(processes, p);
-            printf("Recievied process with id = %d, pid = %d at time = %d\n", p->id, p->processID, getClk());
+            printf("Received process with id = %d, pid = %d at time = %d\n", p->id, p->processID, getClk());
+
+            if (p->remainingtime < runningProcess->remainingtime)
+            {
+                kill(runningProcess->processID, SIGTSTP);
+                // finishTime = getClk();
+                finishTime = block->remaining_time - runningProcess->remainingtime + startTime;
+
+                printf("rprm %d, brm %d, ft %d, st %d\n", runningProcess->remainingtime, block->remaining_time, finishTime, startTime);
+
+                // runningProcess->remainingtime = block->remaining_time - (finishTime - startTime);
+
+                // printf("rprm %d\n", runningProcess->remainingtime);
+
+                enqueuePQ(processes, runningProcess);
+
+                block->state = 0;
+
+                block->burst_time += block->remaining_time - runningProcess->remainingtime;
+                block->remaining_time = runningProcess->remainingtime;
+
+                printf("bbt %d, brt %d\n", block->burst_time, block->remaining_time);
+
+                fprintf(outFile, "At time %d process %d stopped arr %d total %d remain %d wait %d\n",
+                        finishTime,
+                        block->uid,
+                        block->arrival_time,
+                        block->total_time,
+                        block->remaining_time,
+                        block->wait_time);
+                return;
+            }
         }
-        else
-            printf("the buffer is empty!");
+
         SRTNFlag = false;
-    }
 
-    if (runningProcess->remainingtime > peekPQ(processes)->remainingtime)
-    {
+        block->burst_time += block->remaining_time - runningProcess->remainingtime;
+        block->remaining_time = runningProcess->remainingtime;
 
-        printf("stopped process with id %d and time %d\n", runningProcess->id, getClk());
-        kill(runningProcess->processID, SIGTSTP);
-        enqueuePQ(processes, runningProcess);
+        if (runningProcess->remainingtime <= 0)
+        {
 
-        runningProcess = dequeuePQ(processes);
-        kill(runningProcess->processID, SIGCONT);
-    }
-    else
-        printf("%d here with time %d", runningProcess->id, runningProcess->remainingtime);
+            block->state = 2;
+            free(runningProcess);
 
-    if (runningProcess->remainingtime <= 0)
-    {
-        printf("finished process with id %d and time %d\n", runningProcess->id, getClk());
-        free(runningProcess);
-        runningProcess = NULL;
+            double TA = finishTime - block->arrival_time;
+            addSums(TA, block->burst_time, block->wait_time);
+
+            fprintf(outFile, "At time %d process %d finished arr %d total %d remain %d wait %d TA %d WTA %.2f\n",
+                    finishTime,
+                    block->uid,
+                    block->arrival_time,
+                    block->burst_time,
+                    block->remaining_time,
+                    block->wait_time,
+                    (int)TA,
+                    TA / block->burst_time);
+            return;
+        }
     }
 }
 
 void SRTNScheduler()
 {
-
+    signal(SIGCONT, SRTNHandler);
     PriorityQueue *queue = createPQ(processCount, timeCompare);
-
+    int prevTime = 0;
     while (true)
     {
+        int currentTime = getClk();
+        if (currentTime > prevTime)
+            fixWaitTimes(currentTime, &prevTime);
 
-        process sp;
+        SRTN(queue);
 
-        while (msgrcv(messageQueue, &sp, sizeof(sp), 0, IPC_NOWAIT) != -1)
+        while (msgrcv(messageQueue, &buffer, sizeof(buffer), 0, IPC_NOWAIT) != -1)
         {
-
             process *p = malloc(sizeof(*p));
-            *p = sp;
+            *p = buffer;
 
             createChildProcess(p);
             enqueuePQ(queue, p);
-            printf("Recievied process with id = %d, pid = %d at time = %d\n", p->id, p->processID, getClk());
+            printf("Received process with id = %d, pid = %d at time = %d\n", p->id, p->processID, getClk());
         }
-        SRTN(queue);
     }
 }
 
@@ -329,10 +384,10 @@ void outputCalculations()
     double WTA_avg = WTA_sum / processCount;
     int finish_time = getClk();
 
-    fprintf(perf, "CPU utilization = %2f%%\n", 100 * burst_sum / finish_time);
-    fprintf(perf, "Avg WTA = %2f\n", WTA_avg);
-    fprintf(perf, "Avg Waiting = %2f\n", waiting_sum / processCount);
-    fprintf(perf, "Std WTA = %2f\n", sqrt(WTA_SQ_sum / processCount - WTA_avg * WTA_avg));
+    fprintf(perf, "CPU utilization = %.2f%%\n", 100 * burst_sum / finish_time);
+    fprintf(perf, "Avg WTA = %.2f\n", WTA_avg);
+    fprintf(perf, "Avg Waiting = %.2f\n", waiting_sum / processCount);
+    fprintf(perf, "Std WTA = %.2f\n", sqrt(WTA_SQ_sum / processCount - WTA_avg * WTA_avg));
 
     PT_Free(processTable);
 
@@ -356,8 +411,7 @@ int main(int argc, char *argv[])
     initClk();
 
     int algorithm = atoi(argv[1]);
-    if (algorithm == 3)
-        signal(SIGCONT, SRTNHandler);
+
     if (algorithm == 1)
         HPFScheduler();
     else if (algorithm == 2)
