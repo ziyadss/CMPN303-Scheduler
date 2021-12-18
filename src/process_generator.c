@@ -67,6 +67,7 @@ int main(int argc, char *argv[])
     {
         process *p_pointer = peekCQ(processQueue);
         process p = *p_pointer;
+        int arrivalTime= p.arrivaltime;
 
         if (getClk() >= p.arrivaltime)
         {
@@ -79,6 +80,8 @@ int main(int argc, char *argv[])
                 perror("Error sending message to scheduler");
                 exit(-1);
             }
+            process *p2= peekCQ(processQueue);
+            sleep(p2->arrivaltime - arrivalTime);
 
             kill(Childschd, SIGCONT);
         }
