@@ -14,6 +14,9 @@
 #include <signal.h>
 #include <time.h>
 #include <string.h>
+#include <math.h>
+
+#define QUANTUM_TIME 10
 
 /*
     TODO:
@@ -24,6 +27,8 @@
 
     #include <stdbool.h> instead of the enum below?
  */
+
+const char *processFormatString = "%d\t%d\t%d\t%d\n";
 
 // Boolean datatype
 typedef enum
@@ -38,11 +43,11 @@ typedef struct process
     int priority;
     int remainingtime;
     int id;
-    int processID;
+    pid_t processID;
 } process;
 
 #define SHKEY 300
-#define MSGPROCSCED 400
+#define MSGKEY 400
 
 ///==============================
 // don't mess with this variable//
@@ -72,7 +77,7 @@ void initClk()
     shmaddr = (int *)shmat(shmid, NULL, 0);
 }
 
-process *createProcess(int arrivalTime, int pr, int remtime, int pid)
+process *createProcess(int arrivalTime, int pr, int remtime, pid_t pid)
 {
     process *p = malloc(sizeof(*p));
     p->arrivaltime = arrivalTime;
@@ -80,11 +85,6 @@ process *createProcess(int arrivalTime, int pr, int remtime, int pid)
     p->remainingtime = remtime;
     p->id = pid;
     return p;
-}
-
-bool timeCompare(process *a, process *b)
-{
-    return (a->remainingtime > b->remainingtime);
 }
 
 /*
@@ -100,4 +100,14 @@ void destroyClk(bool terminateAll)
     shmdt(shmaddr);
     if (terminateAll)
         killpg(getpgrp(), SIGINT);
+}
+
+int min(int a, int b)
+{
+    return a < b ? a : b;
+}
+
+int max(int a, int b)
+{
+    return a > b ? a : b;
 }

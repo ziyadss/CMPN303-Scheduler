@@ -41,5 +41,6 @@ int main()
     {
         sleep(1);
         (*shmaddr)++;
+        printf("Clock: %d\n", *shmaddr);
     }
 }
