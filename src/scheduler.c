@@ -3,10 +3,7 @@
 #include "PriorityQueue.c"
 #include "CircularQueue.c"
 
-double WTA_sum = 0;
-double WTA_SQ_sum = 0;
-double waiting_sum = 0;
-double burst_sum = 0;
+double WTA_sum = 0, WTA_SQ_sum = 0, waiting_sum = 0, burst_sum = 0;
 size_t processCount;
 int timestep = 0;
 
@@ -24,12 +21,6 @@ void addSums(double TA, int burstTime, int waitTime)
     WTA_SQ_sum += WTA * WTA;
     waiting_sum += waitTime;
     burst_sum += burstTime;
-}
-
-void SRTNHandler(int SIGNUM)
-{
-    SRTNFlag = true;
-    signal(SIGNUM, SRTNHandler);
 }
 
 void createChildProcess(process *recievedProcess)
@@ -62,6 +53,21 @@ key_t getMessageQueue()
     }
 
     return messageQueue;
+}
+
+void fixWaitTimes(int curr, int *prev)
+{
+    for (int i = 0; i < (int)processCount; i++)
+    {
+        Pcb *block = processTable->table[i];
+        if (block && block->state == 0)
+        {
+            int time = curr - max(block->last_run_time, *prev);
+            block->wait_time += time;
+            printf("Process %d wait time = %d\n", block->uid, block->wait_time);
+        }
+    }
+    *prev = curr;
 }
 
 void HPF(PriorityQueue *processes)
@@ -109,21 +115,6 @@ void HPF(PriorityQueue *processes)
 
     free(runningProcess);
     runningProcess = NULL;
-}
-
-void fixWaitTimes(int curr, int *prev)
-{
-    for (int i = 0; i < (int)processCount; i++)
-    {
-        Pcb *block = processTable->table[i];
-        if (block && block->state == 0)
-        {
-            int time = curr - max(block->last_run_time, *prev);
-            block->wait_time += time;
-            printf("Process %d wait time = %d\n", block->uid, block->wait_time);
-        }
-    }
-    *prev = curr;
 }
 
 void HPFScheduler()
@@ -247,6 +238,12 @@ void RRScheduler()
         if (last_run != NULL)
             enqueueCQ(queue, last_run);
     }
+}
+
+void SRTNHandler(int SIGNUM)
+{
+    SRTNFlag = true;
+    signal(SIGNUM, SRTNHandler);
 }
 
 void SRTN(PriorityQueue *processes)
