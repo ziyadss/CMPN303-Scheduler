@@ -247,13 +247,11 @@ void SRTN(PriorityQueue *processes)
 
     while (true)
     {
-
         runningProcess->remainingtime = sleep(runningProcess->remainingtime);
         block->last_run_time = getClk();
 
         while (SRTNFlag)
         {
-
             process *p = receiveProcess();
             if (!p)
                 break;
