@@ -16,12 +16,10 @@
 #include <string.h>
 #include <math.h>
 
-#define QUANTUM_TIME 10
+#define QUANTUM_TIME 4
 
 /*
     TODO:
-
-    Have a predicate function passed to createPQ to use for that instance for priorities? (Ask Abdo?)
 
     Do I have queues use buffers for peek & dequeue, returning -1 for failures?
 

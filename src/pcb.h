@@ -1,5 +1,4 @@
-#ifndef PCB_H
-#define PCB_H
+#pragma once
 
 #include "headers.h"
 
@@ -57,16 +56,13 @@ bool PT_insert(Process_Table *PT, process *p)
     Pcb *PCB = PT->table[p->id - 1];
     PCB->uid = p->id;
     PCB->arrival_time = p->arrivaltime;
+    PCB->last_run_time = p->arrivaltime;
     PCB->remaining_time = p->remainingtime;
     PCB->total_time = p->remainingtime;
     PT->size++;
     return true;
 }
-//TBA
-bool PT_log()
-{
-    return true;
-}
+
 //Frees PCB entry from array of PCB pointers in PT
 bool PT_remove(Process_Table *PT, process *p)
 {
@@ -92,5 +88,3 @@ void PT_Free(Process_Table *PT)
     }
     free(PT);
 }
-
-#endif

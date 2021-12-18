@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../src/headers.h"
+#include "headers.h"
 
 size_t parent(const size_t i) { return (i - 1) / 2; }
 size_t left(const size_t i) { return 2 * i + 1; }

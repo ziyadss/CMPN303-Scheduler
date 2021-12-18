@@ -39,4 +39,4 @@ generate:
 
 memcheck:
 	make debugbuild
-	valgrind --leak-check=full --trace-children=yes --track-origins=yes ./bin/process_generator.out 1
+	valgrind --leak-check=full --trace-children=yes --track-origins=yes ./bin/process_generator.out 3
