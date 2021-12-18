@@ -81,7 +81,8 @@ int main(int argc, char *argv[])
                 exit(-1);
             }
             process *p2= peekCQ(processQueue);
-            sleep(p2->arrivaltime - arrivalTime);
+            if(p2!=NULL)
+                sleep(p2->arrivaltime - arrivalTime);
 
             kill(Childschd, SIGCONT);
         }
