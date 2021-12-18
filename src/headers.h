@@ -21,8 +21,6 @@
 /*
     TODO:
 
-    Have a predicate function passed to createPQ to use for that instance for priorities? (Ask Abdo?)
-
     Do I have queues use buffers for peek & dequeue, returning -1 for failures?
 
     #include <stdbool.h> instead of the enum below?

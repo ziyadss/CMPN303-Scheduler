@@ -1,5 +1,4 @@
-#ifndef PCB_H
-#define PCB_H
+#pragma once
 
 #include "headers.h"
 
@@ -89,5 +88,3 @@ void PT_Free(Process_Table *PT)
     }
     free(PT);
 }
-
-#endif
