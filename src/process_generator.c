@@ -63,29 +63,26 @@ int main(int argc, char *argv[])
         exit(-1);
     }
 
-    while (isEmptyCQ(processQueue) == false)
+    while (!isEmptyCQ(processQueue))
     {
+
         process *p_pointer = peekCQ(processQueue);
         process p = *p_pointer;
-        int arrivalTime= p.arrivaltime;
 
-        if (getClk() >= p.arrivaltime)
+        if (getClk() < p.arrivaltime)
+            sleep(p.arrivaltime - getClk());
+
+        dequeueCQ(processQueue);
+        free(p_pointer);
+
+        int sendVal = msgsnd(messageQueue, &p, sizeof(p), !IPC_NOWAIT);
+        if (sendVal == -1)
         {
-            dequeueCQ(processQueue);
-            free(p_pointer);
-
-            int sendVal = msgsnd(messageQueue, &p, sizeof(p), !IPC_NOWAIT);
-            if (sendVal == -1)
-            {
-                perror("Error sending message to scheduler");
-                exit(-1);
-            }
-            process *p2= peekCQ(processQueue);
-            if(p2!=NULL)
-                sleep(p2->arrivaltime - arrivalTime);
-
-            kill(Childschd, SIGCONT);
+            perror("Error sending message to scheduler");
+            exit(-1);
         }
+
+        kill(Childschd, SIGCONT);
     }
 
     wait(NULL);
