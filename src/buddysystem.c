@@ -15,7 +15,7 @@ struct node
 struct node *newNode(int data, int start)
 {
     // Allocate memory for new node
-    struct node *node = (struct node *)malloc(sizeof(struct node));
+    struct node *node = (struct node *)malloc(sizeof(*node));
     node->data = data;
     node->isUsed = false;
     node->start = start;
@@ -27,8 +27,7 @@ struct node *newNode(int data, int start)
 
 double SizeRounding(double value)
 {
-    double number = pow(2, (double)ceil((double)log(value) / (double)log(2)));
-    return number;
+    return pow(2, ceil(log2(value)));
 }
 
 bool insert(struct node *node, int key, int pid)
@@ -51,10 +50,8 @@ bool insert(struct node *node, int key, int pid)
 
         return inserted = node->isUsed;
     }
-    else
-    {
-        return false;
-    }
+
+    return false;
 }
 
 void deleteChildren(struct node *parent)
@@ -79,12 +76,9 @@ void deallocate(struct node *node, int pid)
         node->processID = -1;
         return;
     }
+
     if (node->left && node->left->isUsed == false && node->right && node->right->isUsed == false)
-    {
-        deleteChildren(node);
-        return;
-    }
-    return;
+        return deleteChildren(node);
 }
 
 bool findNode(struct node *node, int size, struct node **ptr, int bestsize)
@@ -142,6 +136,17 @@ void printInorder2(struct node *node)
     printInorder2(node->right);
 }
 
+int GetStartingIndex(struct node *node, int pid)
+{
+    if (node == NULL)
+        return -1;
+
+    if (pid == node->processID)
+        return node->start;
+
+    return max(GetStartingIndex(node->left, pid), GetStartingIndex(node->right, pid));
+}
+
 int main()
 {
     //create root/
@@ -163,7 +168,7 @@ int main()
     deallocate(root, 8);
     deallocate(root, 6);
     deallocate(root, 2);
-    
+
     printInorder2(root);
 
     return 0;
