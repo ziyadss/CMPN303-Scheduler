@@ -16,7 +16,7 @@
 #include <string.h>
 #include <math.h>
 
-#define QUANTUM_TIME 4
+#define QUANTUM_TIME 2
 
 /*
     TODO:
