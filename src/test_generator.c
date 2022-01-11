@@ -26,7 +26,8 @@ int main(int argc, char *argv[])
         arrivaltime += rand() % 11;
         int remainingtime = rand() % 30;
         int priority = rand() % 11;
-        fprintf(outFile, "%d\t%d\t%d\t%d\n", id, arrivaltime, remainingtime, priority);
+        int memsize = rand() % 255 + 2;
+        fprintf(outFile, "%d\t%d\t%d\t%d\t%d\n", id, arrivaltime, remainingtime, priority, memsize);
     }
 
     return fclose(outFile);

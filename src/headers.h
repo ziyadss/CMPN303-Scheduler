@@ -26,7 +26,7 @@
     #include <stdbool.h> instead of the enum below?
  */
 
-const char *processFormatString = "%d\t%d\t%d\t%d\n";
+const char *processFormatString = "%d\t%d\t%d\t%d\t%d\n";
 
 // Boolean datatype
 typedef enum
@@ -41,6 +41,7 @@ typedef struct process
     int priority;
     int remainingtime;
     int id;
+    int memsize;
     pid_t processID;
 } process;
 

@@ -34,7 +34,7 @@ int main(int argc, char *argv[])
             numberOfProcesses++;
 
             process *p = malloc(sizeof(*p));
-            sscanf(line, processFormatString, &p->id, &p->arrivaltime, &p->remainingtime, &p->priority);
+            sscanf(line, processFormatString, &p->id, &p->arrivaltime, &p->remainingtime, &p->priority, &p->memsize);
 
             // printf(processFormatString, p->id, p->arrivaltime, p->remainingtime, p->priority);
             enqueueCQ(processQueue, p);
