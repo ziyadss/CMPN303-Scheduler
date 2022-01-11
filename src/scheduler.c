@@ -1,4 +1,5 @@
 #include "pcb.h"
+#include "buddy_system.c"
 #include "PriorityQueue.c"
 #include "CircularQueue.c"
 
