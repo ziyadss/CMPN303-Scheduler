@@ -2,6 +2,8 @@
 
 #include "headers.h"
 
+FILE *memoryFile;
+
 struct node
 {
     int data;
@@ -74,6 +76,8 @@ void deallocate(struct node *node, int pid)
     {
         node->isUsed = false;
         node->processID = -1;
+        fprintf(memoryFile, "At time %d freed %d bytes from process %d from %d to %d\n",
+                getClk(), node->data, pid, node->start, node->start + node->data - 1);
         return;
     }
 
@@ -117,7 +121,13 @@ bool allocate(struct node *node, int key, int pid)
     struct node *ptr = NULL;
     findNode(node, number, &ptr, 2000);
 
-    return ptr && insert(ptr, number, pid);
+    bool allocated = ptr && insert(ptr, number, pid);
+
+    if (allocated)
+        fprintf(memoryFile, "At time %d allocated %d bytes for process %d from %d to %d\n",
+                getClk(), number, pid, ptr->start, ptr->start + number - 1);
+
+    return allocated;
 }
 
 void printInorder2(struct node *node)
@@ -147,29 +157,30 @@ int GetStartingIndex(struct node *node, int pid)
     return max(GetStartingIndex(node->left, pid), GetStartingIndex(node->right, pid));
 }
 
-int main()
-{
-    //create root/
-    struct node *root = newNode(1024, 0);
+// int main()
+// {
+//     //create root/
+//     memoryFile = fopen("memory.log", "w");
+//     struct node *root = newNode(1024, 0);
 
-    bool i = allocate(root, 116, 6);
-    i = allocate(root, 120, 8);
-    i = allocate(root, 40, 2);
-    // i = allocate(root,240);
+//     bool i = allocate(root, 116, 6);
+//     i = allocate(root, 120, 8);
+//     i = allocate(root, 40, 2);
+//     // i = allocate(root,240);
 
-    if (i == true)
-        printf("Allocated!\n");
-    else
-        printf("full\n");
+//     if (i == true)
+//         printf("Allocated!\n");
+//     else
+//         printf("full\n");
 
-    printInorder2(root);
+//     printInorder2(root);
 
-    printf("\nDeallocation\n");
-    deallocate(root, 8);
-    deallocate(root, 6);
-    deallocate(root, 2);
+//     printf("\nDeallocation\n");
+//     deallocate(root, 8);
+//     deallocate(root, 6);
+//     deallocate(root, 2);
 
-    printInorder2(root);
+//     printInorder2(root);
 
-    return 0;
-}
+//     return 0;
+// }
