@@ -1,6 +1,9 @@
 #include "pcb.h"
+#include "buddy_system.c"
 #include "PriorityQueue.c"
 #include "CircularQueue.c"
+
+struct node *memoryRoot;
 
 double WTA_sum = 0, WTA_SQ_sum = 0, waiting_sum = 0, burst_sum = 0;
 size_t processCount;
@@ -166,6 +169,8 @@ process *RR(CircularQueue *processes)
         return NULL;
 
     Pcb *block = PT_find(processTable, runningProcess);
+    if (block->remaining_time == block->total_time && !allocate(memoryRoot, runningProcess->memsize, runningProcess->id))
+        return runningProcess;
 
     int startTime = getClk();
     int runtime = min(runningProcess->remainingtime, QUANTUM_TIME);
@@ -185,6 +190,7 @@ process *RR(CircularQueue *processes)
 
     if (runningProcess->remainingtime <= 0)
     {
+        deallocate(memoryRoot, runningProcess->id);
         free(runningProcess);
         logFinish(block, block->last_run_time);
         return NULL;
@@ -332,8 +338,10 @@ int main(int argc, char *argv[])
 
     signal(SIGINT, outputCalculations);
     outFile = fopen("scheduler.log", "w");
+    memoryFile = fopen("memory.log", "w");
 
     fprintf(outFile, "#At time x process y state arr w total z remain y wait k\n");
+    fprintf(memoryFile, "#At time x allocated y bytes for process z from i to j\n");
 
     messageQueue = getMessageQueue();
     processCount = atol(argv[2]);
@@ -342,6 +350,8 @@ int main(int argc, char *argv[])
     initClk();
 
     int algorithm = atoi(argv[1]);
+
+    memoryRoot = newNode(1024, 0);
 
     if (algorithm == 1)
         HPFScheduler();

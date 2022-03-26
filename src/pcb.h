@@ -12,6 +12,7 @@ typedef struct Pcb
     int remaining_time;
     int last_run_time;
     int total_time;
+    int memory_location;
 } Pcb;
 
 typedef struct Process_Table
@@ -59,6 +60,7 @@ bool PT_insert(Process_Table *PT, process *p)
     PCB->last_run_time = p->arrivaltime;
     PCB->remaining_time = p->remainingtime;
     PCB->total_time = p->remainingtime;
+    PCB->memory_location = -1;
     PT->size++;
     return true;
 }

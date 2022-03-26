@@ -33,7 +33,7 @@ CircularQueue *createCQ()
  */
 void enqueueCQ(struct CircularQueue *queue, process *p)
 {
-    struct CircularNode *node = malloc(sizeof(CircularNode));
+    struct CircularNode *node = malloc(sizeof(*node));
     node->p = p;
 
     if (queue->first)
